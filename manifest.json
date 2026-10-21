@@ -1,0 +1,28 @@
+{
+  "background_color": "#f8f1e4",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Gulf Duty &amp; Salary App",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Gulf Salaru",
+  "start_url": "/",
+  "theme_color": "#8b1e1e",
+  "icons": [
+    {
+      "src": "https://fabrication4man-bot.github.io/Salary-Calculator-App/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "isSquare": true,
+      "isPng": true,
+      "isWebp": false,
+      "isJpg": false,
+      "width": 192,
+      "is512x512": false,
+      "is256x256": false,
+      "is192x192": true
+    }
+  ],
+  "id": "/sSalary-Calculator-App/",
+  "description": "Gulf duty, salary, attendance, &amp; sick leave and currency conversion to INR."
+}
