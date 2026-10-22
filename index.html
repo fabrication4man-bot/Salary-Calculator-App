@@ -240,7 +240,7 @@ function render(){
   // Never add the full monthly basic salary to the current month's earned pay.
   let net=0;
   if(hasMonthEntries){
-    const earnedDutyDays=p+f;
+    const earnedDutyDays=p; // Friday earns Friday OT only; no separate basic-duty pay or daily allowance.
     const earnedAllowance=(cfg.allow/26)*earnedDutyDays;
     net=earnedDutyDays*dr+sickEarn+earnedAllowance+np+fp+hp;
   }
