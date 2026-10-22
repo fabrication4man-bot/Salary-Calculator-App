@@ -84,15 +84,15 @@ body{margin:0;padding:12px;background:#f1f5f9;color:#0f172a}
       <h1>Gulf Duty &amp; Salary App</h1>
       <p>8h Normal &bull; 1.25x OT &bull; 1.5x Friday &bull; 2.0x Holiday</p>
     </div>
-    <div class="badge"><span>NET PAY</span><b id="topSal">210.000 KD</b></div>
+    <div class="badge"><span>NET PAY</span><b id="topSal">0.000 KD</b></div>
   </div>
   <div class="card">
     <div class="sec-hdr"><span class="sec-title">1. Salary Configuration</span><span class="rate-pill" id="topRate">1.010 KWD/HR</span></div>
     <div class="grid3">
       <div class="inp"><label>Salary Currency</label><select id="currencyInp" onchange="saveCfg()"><option value="KWD">Kuwait (KWD)</option><option value="SAR">Saudi (SAR)</option><option value="AED">UAE (AED)</option><option value="QAR">Qatar (QAR)</option><option value="OMR">Oman (OMR)</option><option value="BHD">Bahrain (BHD)</option></select></div>
-      <div class="inp"><label id="basicLabel">Basic (KWD)</label><input type="number" id="basicInp" value="210" onchange="saveCfg()"></div>
+      <div class="inp"><label id="basicLabel">Basic (KWD)</label><input type="number" id="basicInp" value="0" min="0" onchange="saveCfg()"></div>
       <div class="inp"><label id="allowLabel">Allowance (KWD)</label><input type="number" id="allowInp" value="0" onchange="saveCfg()"></div>
-      <div class="inp"><label>OT Base</label><select id="baseInp" onchange="saveCfg()"><option value="26">26 Days</option><option value="30">30 Days</option></select></div>
+      <div class="inp"><label>OT Base</label><select id="baseInp" onchange="saveCfg()"><option value="26">26 Days</option></select></div>
     </div>
     <div class="row"><span>Latest exchange rate:</span><b id="fxRate">Loading currency rate…</b></div>
     <div class="note" id="fxUpdated">Internet connection is needed to fetch the latest daily rate.</div>
@@ -121,7 +121,7 @@ body{margin:0;padding:12px;background:#f1f5f9;color:#0f172a}
     <div class="cal" id="calGrid"></div>
   </div>
   <div class="card">
-    <div class="sec-hdr"><span class="sec-title">3. Monthly Salary Breakdown</span><select id="modeInp" onchange="saveCfg()" style="padding:4px 8px;border-radius:6px;border:1px solid #cbd5e1;font-weight:700;font-size:.72rem"><option value="deduct">Full Basic - Absent</option><option value="earned">Only Earned Days</option></select></div>
+    <div class="sec-hdr"><span class="sec-title">3. Monthly Salary Breakdown</span><select id="modeInp" onchange="saveCfg()" style="padding:4px 8px;border-radius:6px;border:1px solid #cbd5e1;font-weight:700;font-size:.72rem"><option value="deduct">Full Basic - Absent</option></select></div>
     <div class="row"><span>Daily / Hourly Rate:</span><b id="rRate">0 KWD</b></div>
     <div class="row"><span>Total Attendance:</span><b id="rAtt">0 P | 0 A | 0 Fri</b></div>
     <div class="row"><span>Sick Leave:</span><b id="rSick">0 days</b></div>
@@ -151,7 +151,9 @@ body{margin:0;padding:12px;background:#f1f5f9;color:#0f172a}
 <script>
 let dt=new Date(),y=dt.getFullYear(),m=dt.getMonth(),selKey=null,tSt='present',qMode='edit';
 let db=JSON.parse(localStorage.getItem('gulf_att_v5')||'{}');
-let cfg=JSON.parse(localStorage.getItem('gulf_cfg_v5')||'{"basic":210,"allow":0,"base":26,"mode":"deduct","currency":"KWD"}');
+let cfg=JSON.parse(localStorage.getItem('gulf_cfg_v5')||'{"basic":0,"allow":0,"base":26,"mode":"deduct","currency":"KWD"}');
+// One-time migration: remove the old demo default (210 KD) so the user enters their own salary.
+if(!localStorage.getItem('gulf_cfg_zero_default_v1')){if(Number(cfg.basic)===210){cfg.basic=0;}localStorage.setItem('gulf_cfg_zero_default_v1','1');localStorage.setItem('gulf_cfg_v5',JSON.stringify(cfg));}
 cfg.currency=cfg.currency||'KWD';
 let fxRate=null, fxUpdatedAt='', fxLoading=false;
 const currencyNames={KWD:'Kuwait Dinar',SAR:'Saudi Riyal',AED:'UAE Dirham',QAR:'Qatari Riyal',OMR:'Omani Rial',BHD:'Bahraini Dinar'};
@@ -165,9 +167,10 @@ document.getElementById('baseInp').value=cfg.base;
 document.getElementById('modeInp').value=cfg.mode||'deduct';
 
 function saveCfg(){
-  cfg.basic=parseFloat(document.getElementById('basicInp').value)||210;
+  cfg.basic=Math.max(0,parseFloat(document.getElementById('basicInp').value)||0);
   cfg.allow=parseFloat(document.getElementById('allowInp').value)||0;
-  cfg.base=parseInt(document.getElementById('baseInp').value)||26;
+  cfg.base=26;
+  document.getElementById('baseInp').value='26';
   cfg.mode=document.getElementById('modeInp').value;
   cfg.currency=document.getElementById('currencyInp').value||'KWD';
   document.getElementById('basicLabel').innerText='Basic ('+cfg.currency+')';
@@ -183,7 +186,7 @@ function setMode(md){
   document.getElementById('modeBadge').innerText=lbl[md];
 }
 function chgM(d){m+=d;if(m<0){m=11;y--}if(m>11){m=0;y++}render()}
-function defSt(yr,mo,da){return new Date(yr,mo,da).getDay()===5?'friday':'none'}
+function defSt(yr,mo,da){return 'none'}
 function sickTierFraction(index){
   if(index<=15)return 1;
   if(index<=25)return .75;
@@ -208,10 +211,11 @@ function render(){
   ['SUN','MON','TUE','WED','THU','FRI','SAT'].forEach((d,i)=>{let e=document.createElement('div');e.className='dname'+(i===5?' fri':'');e.innerText=d;g.appendChild(e)});
   let fd=new Date(y,m,1).getDay(),td=new Date(y,m+1,0).getDate();
   for(let i=0;i<fd;i++){let e=document.createElement('div');e.className='cell empty';g.appendChild(e)}
-  let p=0,a=0,f=0,sl=0,not=0,fot=0,hot=0,sickDed=0,sickEarn=0;
-  let dr=cfg.basic/cfg.base,hr=dr/8,daily=cfg.basic/30;
+  let p=0,a=0,f=0,sl=0,not=0,fot=0,hot=0,sickDed=0,sickEarn=0,hasMonthEntries=false;
+  let dr=cfg.basic/26,hr=dr/8,daily=cfg.basic/30,absentDaily=cfg.basic/26;
   for(let d=1;d<=td;d++){
     let k=`${y}-${m+1}-${d}`,r=db[k]||{status:defSt(y,m,d),hours:0};
+    if(r.status && r.status!=='none')hasMonthEntries=true;
     let c=document.createElement('div');c.className='cell '+r.status;
     let labels={present:'P',absent:'A',friday:'FRI',holiday:'HOL',sick:'SL',none:'-'};
     c.innerHTML=`<span>${d}</span><span class="sub">${labels[r.status]||'-'}</span>`;
@@ -228,14 +232,15 @@ function render(){
       sickEarn+=daily*frac;
     }
   }
-  let np=not*hr*1.25,fp=fot*hr*1.5,hp=hot*hr*2,absDed=a*daily;
+  let np=not*hr*1.25,fp=fot*hr*1.5,hp=hot*hr*2,absDed=a*absentDaily;
   let deductions=absDed+sickDed;
-  let net=cfg.mode==='earned'?((p+f)*daily+sickEarn+cfg.allow+np+fp+hp):(cfg.basic+cfg.allow+np+fp+hp-deductions);
+  let net=0;
+  if(hasMonthEntries){net=cfg.mode==='earned'?((p+f)*absentDaily+sickEarn+cfg.allow+np+fp+hp):(cfg.basic+cfg.allow+np+fp+hp-deductions);}
   let finalNet=Math.max(0,net).toFixed(3);
   const cur=cfg.currency||'KWD';
   document.getElementById('topSal').innerText=Number(finalNet).toFixed(3)+' '+cur;
   document.getElementById('topRate').innerText=hr.toFixed(3)+' '+cur+'/HR';
-  document.getElementById('rRate').innerText=`${dr.toFixed(2)} ${cur}/d | ${hr.toFixed(3)} ${cur}/h`;
+  document.getElementById('rRate').innerText=`${dr.toFixed(3)} ${cur}/d | ${hr.toFixed(3)} ${cur}/h`;
   document.getElementById('rAtt').innerText=`${p} Present | ${a} Absent | ${f} Fri`;
   document.getElementById('rSick').innerText=`${sl} days | deduction ${sickDed.toFixed(3)} ${cfg.currency}`;
   document.getElementById('rNot').innerText=`${not}h (+${np.toFixed(3)} ${cfg.currency})`;
