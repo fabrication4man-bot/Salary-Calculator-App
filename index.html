@@ -121,7 +121,7 @@ body{margin:0;padding:12px;background:#f1f5f9;color:#0f172a}
     <div class="cal" id="calGrid"></div>
   </div>
   <div class="card">
-    <div class="sec-hdr"><span class="sec-title">3. Monthly Salary Breakdown</span><select id="modeInp" onchange="saveCfg()" style="padding:4px 8px;border-radius:6px;border:1px solid #cbd5e1;font-weight:700;font-size:.72rem"><option value="deduct">Full Basic - Absent</option></select></div>
+    <div class="sec-hdr"><span class="sec-title">3. Monthly Salary Breakdown</span><select id="modeInp" onchange="saveCfg()" style="padding:4px 8px;border-radius:6px;border:1px solid #cbd5e1;font-weight:700;font-size:.72rem"><option value="earned">Earned Salary (Duty Days Only)</option></select></div>
     <div class="row"><span>Daily / Hourly Rate:</span><b id="rRate">0 KWD</b></div>
     <div class="row"><span>Total Attendance:</span><b id="rAtt">0 P | 0 A | 0 Fri</b></div>
     <div class="row"><span>Sick Leave:</span><b id="rSick">0 days</b></div>
@@ -151,7 +151,7 @@ body{margin:0;padding:12px;background:#f1f5f9;color:#0f172a}
 <script>
 let dt=new Date(),y=dt.getFullYear(),m=dt.getMonth(),selKey=null,tSt='present',qMode='edit';
 let db=JSON.parse(localStorage.getItem('gulf_att_v5')||'{}');
-let cfg=JSON.parse(localStorage.getItem('gulf_cfg_v5')||'{"basic":0,"allow":0,"base":26,"mode":"deduct","currency":"KWD"}');
+let cfg=JSON.parse(localStorage.getItem('gulf_cfg_v5')||'{"basic":0,"allow":0,"base":26,"mode":"earned","currency":"KWD"}');
 // One-time migration: remove the old demo default (210 KD) so the user enters their own salary.
 if(!localStorage.getItem('gulf_cfg_zero_default_v1')){if(Number(cfg.basic)===210){cfg.basic=0;}localStorage.setItem('gulf_cfg_zero_default_v1','1');localStorage.setItem('gulf_cfg_v5',JSON.stringify(cfg));}
 cfg.currency=cfg.currency||'KWD';
@@ -164,14 +164,15 @@ document.getElementById('allowLabel').innerText='Allowance ('+cfg.currency+')';
 document.getElementById('basicInp').value=cfg.basic;
 document.getElementById('allowInp').value=cfg.allow||0;
 document.getElementById('baseInp').value=cfg.base;
-document.getElementById('modeInp').value=cfg.mode||'deduct';
+cfg.mode='earned';
+document.getElementById('modeInp').value='earned';
 
 function saveCfg(){
   cfg.basic=Math.max(0,parseFloat(document.getElementById('basicInp').value)||0);
   cfg.allow=parseFloat(document.getElementById('allowInp').value)||0;
   cfg.base=26;
   document.getElementById('baseInp').value='26';
-  cfg.mode=document.getElementById('modeInp').value;
+  cfg.mode='earned';
   cfg.currency=document.getElementById('currencyInp').value||'KWD';
   document.getElementById('basicLabel').innerText='Basic ('+cfg.currency+')';
   document.getElementById('allowLabel').innerText='Allowance ('+cfg.currency+')';
@@ -234,8 +235,15 @@ function render(){
   }
   let np=not*hr*1.25,fp=fot*hr*1.5,hp=hot*hr*2,absDed=a*absentDaily;
   let deductions=absDed+sickDed;
+  // Earn only what has been recorded: present/friday/holiday duty days,
+  // eligible sick-leave pay, prorated allowance, and recorded overtime.
+  // Never add the full monthly basic salary to the current month's earned pay.
   let net=0;
-  if(hasMonthEntries){net=cfg.mode==='earned'?((p+f)*absentDaily+sickEarn+cfg.allow+np+fp+hp):(cfg.basic+cfg.allow+np+fp+hp-deductions);}
+  if(hasMonthEntries){
+    const earnedDutyDays=p+f;
+    const earnedAllowance=(cfg.allow/26)*earnedDutyDays;
+    net=earnedDutyDays*dr+sickEarn+earnedAllowance+np+fp+hp;
+  }
   let finalNet=Math.max(0,net).toFixed(3);
   const cur=cfg.currency||'KWD';
   document.getElementById('topSal').innerText=Number(finalNet).toFixed(3)+' '+cur;
