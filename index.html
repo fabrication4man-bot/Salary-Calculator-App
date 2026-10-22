@@ -235,14 +235,18 @@ function render(){
   }
   let np=not*hr*1.25,fp=fot*hr*1.5,hp=hot*hr*2,absDed=a*absentDaily;
   let deductions=absDed+sickDed;
-  // Earn only what has been recorded: present/friday/holiday duty days,
-  // eligible sick-leave pay, prorated allowance, and recorded overtime.
-  // Never add the full monthly basic salary to the current month's earned pay.
+  // Earned-pay rules:
+  // - Present: daily basic + normal OT (1.25x).
+  // - Friday: Friday OT only (1.5x); no basic-duty pay or daily allowance.
+  // - Holiday: daily basic + holiday OT (2x).
+  // - Sick leave: eligible sick-leave pay.
+  // Blank dates earn nothing; absence is only recorded when explicitly marked.
+  // Use explicit status counts so Friday can never enter the basic-duty total.
   let net=0;
   if(hasMonthEntries){
-    const earnedDutyDays=p; // Friday earns Friday OT only; no separate basic-duty pay or daily allowance.
-    const earnedAllowance=(cfg.allow/26)*earnedDutyDays;
-    net=earnedDutyDays*dr+sickEarn+earnedAllowance+np+fp+hp;
+    const basicDutyDays=p; // p counts Present and Holiday only; Friday is excluded.
+    const earnedAllowance=(cfg.allow/26)*p;
+    net=(basicDutyDays*dr)+sickEarn+earnedAllowance+np+fp+hp;
   }
   let finalNet=Math.max(0,net).toFixed(3);
   const cur=cfg.currency||'KWD';
