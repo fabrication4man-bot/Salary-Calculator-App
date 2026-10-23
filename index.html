@@ -82,6 +82,25 @@ body{margin:0;padding:12px;background:#f1f5f9;color:#0f172a}
 .bsave{flex:1;background:#16a34a;color:#fff;border:none;padding:11px;border-radius:10px;font-weight:800;cursor:pointer}
 .bcan{background:#e2e8f0;border:none;padding:11px 14px;border-radius:10px;font-weight:800;cursor:pointer}
 .note{font-size:.72rem;line-height:1.45;color:#64748b;margin-top:9px}
+
+/* App sharing and QR panel */
+.share-modal{position:fixed;inset:0;background:rgba(15,23,42,.72);display:none;align-items:center;justify-content:center;padding:14px;z-index:200}
+.share-panel{background:#fff;color:#0f172a;width:100%;max-width:380px;max-height:92vh;overflow:auto;border-radius:18px;padding:18px;box-shadow:0 18px 55px rgba(0,0,0,.25)}
+.share-title{font-size:1.1rem;font-weight:900;margin:0 0 5px}
+.share-desc{font-size:.78rem;line-height:1.45;color:#64748b;margin:0 0 12px}
+.share-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.share-action{border:0;border-radius:10px;padding:11px 8px;font-weight:800;font-size:.8rem;cursor:pointer;background:#e2e8f0;color:#0f172a}
+.share-action.primary{background:#2563eb;color:#fff}
+.share-action.green{background:#15803d;color:#fff}
+.qr-box{display:flex;justify-content:center;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px;min-height:220px}
+#appQr canvas,#appQr img{max-width:100%;height:auto!important}
+.share-foot{font-size:.7rem;color:#64748b;line-height:1.4;margin-top:10px;text-align:center}
+
+.print-only-note{font-size:12px;color:#64748b}
+@media print{
+  body{background:#fff!important;padding:0!important}
+}
+
 </style>
 </head>
 <body>
@@ -93,6 +112,15 @@ body{margin:0;padding:12px;background:#f1f5f9;color:#0f172a}
       <p>8h Normal &bull; 1.25x OT &bull; 1.5x Friday &bull; 2.0x Holiday</p>
     </div>
     <div class="badge"><span>NET PAY</span><b id="topSal">0.000 KD</b></div>
+  </div>
+  <div class="card" style="padding:10px;display:grid;gap:8px">
+    <button type="button" onclick="openSharePanel()" style="width:100%;padding:12px;border:0;border-radius:12px;background:#2563eb;color:#fff;font-weight:800;font-size:.95rem;cursor:pointer">🔗 Share App / QR Code</button>
+    <div class="grid3" style="grid-template-columns:1fr 1fr">
+      <div class="inp"><label>Employee Name (optional)</label><input id="employeeNameInp" type="text" placeholder="Employee name"></div>
+      <div class="inp"><label>Employee ID (optional)</label><input id="employeeIdInp" type="text" placeholder="Employee ID"></div>
+    </div>
+    <button type="button" onclick="printSalarySlip()" style="width:100%;padding:12px;border:0;border-radius:12px;background:#15803d;color:#fff;font-weight:800;font-size:.92rem;cursor:pointer">🧾 Print Individual Salary Slip / Save PDF</button>
+    <button type="button" onclick="printMonthlyReport()" style="width:100%;padding:12px;border:0;border-radius:12px;background:#0f172a;color:#fff;font-weight:800;font-size:.92rem;cursor:pointer">📅 Print Monthly Attendance & Salary Report</button>
   </div>
   <div class="card">
     <div class="sec-hdr"><span class="sec-title">1. Salary Configuration</span><span class="rate-pill" id="topRate">1.010 KWD/HR</span></div>
@@ -164,6 +192,13 @@ let cfg=JSON.parse(localStorage.getItem('gulf_cfg_v5')||'{"basic":0,"allow":0,"b
 if(!localStorage.getItem('gulf_cfg_zero_default_v1')){if(Number(cfg.basic)===210){cfg.basic=0;}localStorage.setItem('gulf_cfg_zero_default_v1','1');localStorage.setItem('gulf_cfg_v5',JSON.stringify(cfg));}
 cfg.currency=cfg.currency||'KWD';
 let fxRate=null, fxUpdatedAt='', fxLoading=false;
+const employeeNameInput=document.getElementById('employeeNameInp');
+const employeeIdInput=document.getElementById('employeeIdInp');
+employeeNameInput.value=localStorage.getItem('gulf_employee_name_v1')||'';
+employeeIdInput.value=localStorage.getItem('gulf_employee_id_v1')||'';
+employeeNameInput.addEventListener('change',()=>localStorage.setItem('gulf_employee_name_v1',employeeNameInput.value.trim()));
+employeeIdInput.addEventListener('change',()=>localStorage.setItem('gulf_employee_id_v1',employeeIdInput.value.trim()));
+
 const currencyNames={KWD:'Kuwait Dinar',SAR:'Saudi Riyal',AED:'UAE Dirham',QAR:'Qatari Riyal',OMR:'Omani Rial',BHD:'Bahraini Dinar'};
 const fxCacheKey='gulf_fx_cache_v1';
 document.getElementById('currencyInp').value=cfg.currency;
@@ -213,6 +248,176 @@ function getSickFractionForKey(key){
   });
   return sickTierFraction(prior+1);
 }
+
+// App sharing: standalone UI only; salary and attendance calculations remain unchanged.
+const APP_BROWSER_URL = 'https://fabrication4man-bot.github.io/Salary-Calculator-App/';
+const APP_APK_URL = 'https://github.com/fabrication4man-bot/Salary-Calculator-App/releases/download/v1.0.0/Gulf.Salary.apk';
+let appQrReady = false;
+function openSharePanel(){
+  document.getElementById('shareModal').style.display='flex';
+  if(!appQrReady){
+    const qrTarget=document.getElementById('appQr');
+    qrTarget.innerHTML='';
+    if(window.QRCode){
+      new QRCode(qrTarget,{text:APP_BROWSER_URL,width:196,height:196,colorDark:'#0f172a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+      appQrReady=true;
+    }else{
+      qrTarget.innerHTML='<p style="max-width:230px;text-align:center;font-size:.8rem;color:#b91c1c">QR Code load nahi hua. Internet connect karke dobara kholen.</p>';
+    }
+  }
+}
+function closeSharePanel(){document.getElementById('shareModal').style.display='none'}
+function openAppBrowser(){window.open(APP_BROWSER_URL,'_blank','noopener')}
+function downloadAppApk(){window.open(APP_APK_URL,'_blank','noopener')}
+async function shareAppLink(){
+  const shareData={title:'Gulf Duty & Salary App',text:'Gulf Duty & Salary App — use in browser or download the Android APK:',url:APP_BROWSER_URL};
+  try{
+    if(navigator.share){await navigator.share(shareData);}
+    else if(navigator.clipboard && navigator.clipboard.writeText){await navigator.clipboard.writeText(APP_BROWSER_URL);alert('App link copied. Ab WhatsApp ya kisi app mein paste kar dein.');}
+    else{window.prompt('Copy this app link:',APP_BROWSER_URL);}
+  }catch(e){if(e.name!=='AbortError')window.prompt('Copy this app link:',APP_BROWSER_URL);}
+}
+function getQrCanvas(){
+  const qr=document.getElementById('appQr');
+  if(!qr)return null;
+  let canvas=qr.querySelector('canvas');
+  if(canvas)return canvas;
+  const img=qr.querySelector('img');
+  if(img && img.complete && img.naturalWidth){
+    const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
+    const ctx=c.getContext('2d');ctx.drawImage(img,0,0);return c;
+  }
+  return null;
+}
+function downloadQrImage(){
+  const canvas=getQrCanvas();
+  if(!canvas){alert('QR Code abhi ready nahi hai. Thodi der baad try karein.');return;}
+  const a=document.createElement('a');a.download='Gulf-Duty-Salary-App-QR.png';a.href=canvas.toDataURL('image/png');a.click();
+}
+async function shareQrImage(){
+  const canvas=getQrCanvas();
+  if(!canvas){alert('QR Code abhi ready nahi hai. Thodi der baad try karein.');return;}
+  canvas.toBlob(async blob=>{
+    if(!blob){alert('QR image tayyar nahi ho paayi. Save QR Image try karein.');return;}
+    const file=new File([blob],'Gulf-Duty-Salary-App-QR.png',{type:'image/png'});
+    try{
+      if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+        await navigator.share({title:'Gulf Duty & Salary App QR Code',text:'Scan this QR code to open Gulf Duty & Salary App.',files:[file]});
+      }else{
+        downloadQrImage();
+        alert('QR image download ho gayi. Ab Gallery se WhatsApp ya kisi aur app par share kar dein.');
+      }
+    }catch(e){if(e.name!=='AbortError'){downloadQrImage();}}
+  },'image/png');
+}
+
+function escPrint(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function getMonthReportData(){
+  const monthNames=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const totalDays=new Date(y,m+1,0).getDate();
+  const cur=cfg.currency||'KWD';
+  const dr=Number(cfg.basic||0)/26, hr=dr/8, daily=Number(cfg.basic||0)/30, absentDaily=Number(cfg.basic||0)/26;
+  let present=0,absent=0,fridays=0,sick=0,normalOT=0,fridayOT=0,holidayOT=0,sickDed=0,sickEarn=0,hasEntries=false;
+  const rows=[];
+  for(let day=1;day<=totalDays;day++){
+    const key=`${y}-${m+1}-${day}`;
+    const r=db[key]||{status:'none',hours:0};
+    const status=r.status||'none', hours=Number(r.hours||0);
+    if(status!=='none')hasEntries=true;
+    if(status==='present'){present++;normalOT+=hours;}
+    else if(status==='absent'){absent++;}
+    else if(status==='friday'){fridays++;fridayOT+=hours;}
+    else if(status==='holiday'){present++;holidayOT+=hours;}
+    else if(status==='sick'){
+      sick++;
+      const frac=getSickFractionForKey(key);
+      sickDed+=daily*(1-frac); sickEarn+=daily*frac;
+    }
+    const labels={present:'Present',absent:'Absent',friday:'Friday Duty',holiday:'Holiday Duty',sick:'Sick Leave',none:'Blank / Not Marked'};
+    rows.push({day,status:labels[status]||status,hours:(hours>0?hours+' h':'—')});
+  }
+  const normalPay=normalOT*hr*1.25, fridayPay=fridayOT*hr*1.5, holidayPay=holidayOT*hr*2;
+  const basicDutyDays=present;
+  const allowance=(Number(cfg.allow||0)/26)*basicDutyDays;
+  const net=hasEntries?Math.max(0,(basicDutyDays*dr)+sickEarn+allowance+normalPay+fridayPay+holidayPay):0;
+  return {monthName:monthNames[m],year:y,totalDays,cur,dr,hr,present,absent,fridays,sick,normalOT,fridayOT,holidayOT,normalPay,fridayPay,holidayPay,sickDed,sickEarn,allowance,net,rows};
+}
+function printDocument(title,bodyHtml){
+  const win=window.open('','_blank');
+  if(!win){alert('Print window open nahi hui. Browser settings mein pop-ups allow karke dobara try karein.');return;}
+  win.document.open();
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escPrint(title)}</title>
+  <style>
+  *{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#111827;margin:24px;font-size:12px}
+  h1{font-size:21px;margin:0 0 5px}h2{font-size:15px;margin:20px 0 8px}
+  .sub{color:#4b5563;margin-bottom:18px}.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+  .meta div,.metric{border:1px solid #d1d5db;padding:8px;border-radius:6px}
+  table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #d1d5db;padding:6px;text-align:left}th{background:#f3f4f6}
+  .money td:last-child{text-align:right;font-variant-numeric:tabular-nums}.total{font-size:16px;font-weight:bold;background:#ecfdf5}
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.label{color:#4b5563;font-size:10px}.value{font-size:14px;font-weight:bold;margin-top:4px}
+  .foot{margin-top:22px;color:#6b7280;font-size:10px}
+  .actions{margin-bottom:16px}.actions button{padding:9px 14px;margin-right:8px}
+  @media print{body{margin:10mm}.actions{display:none}thead{display:table-header-group}tr{break-inside:avoid}}
+  </style></head><body><div class="actions"><button onclick="window.print()">Print / Save PDF</button><button onclick="window.close()">Close</button></div>${bodyHtml}
+  <div class="foot">Generated by Gulf Duty &amp; Salary App. Please verify entries before payroll processing.</div>
+  <script>window.onload=()=>setTimeout(()=>{try{window.focus()}catch(e){}},250);<\/script></body></html>`);
+  win.document.close();
+}
+function employeeMetaHtml(){
+  const name=(document.getElementById('employeeNameInp').value||'').trim();
+  const id=(document.getElementById('employeeIdInp').value||'').trim();
+  localStorage.setItem('gulf_employee_name_v1',name);
+  localStorage.setItem('gulf_employee_id_v1',id);
+  return `<div class="meta"><div><b>Employee Name:</b> ${escPrint(name||'Not entered')}</div><div><b>Employee ID:</b> ${escPrint(id||'Not entered')}</div><div><b>Basic Salary:</b> ${Number(cfg.basic||0).toFixed(3)} ${escPrint(cfg.currency||'KWD')}</div><div><b>Allowance (monthly):</b> ${Number(cfg.allow||0).toFixed(3)} ${escPrint(cfg.currency||'KWD')}</div></div>`;
+}
+function printSalarySlip(){
+  const d=getMonthReportData(), cur=escPrint(d.cur);
+  const body=`<h1>Gulf Duty &amp; Salary App</h1><div class="sub">Individual Salary Slip — ${escPrint(d.monthName)} ${d.year}</div>
+  ${employeeMetaHtml()}
+  <div class="metrics">
+    <div class="metric"><div class="label">Present / Holiday Duty Days</div><div class="value">${d.present}</div></div>
+    <div class="metric"><div class="label">Absent Days</div><div class="value">${d.absent}</div></div>
+    <div class="metric"><div class="label">Sick Leave Days</div><div class="value">${d.sick}</div></div>
+  </div>
+  <h2>Salary Breakdown</h2><table class="money"><thead><tr><th>Description</th><th>Amount (${cur})</th></tr></thead><tbody>
+  <tr><td>Basic earned (${d.present} duty days × daily rate ${d.dr.toFixed(3)})</td><td>${(d.present*d.dr).toFixed(3)}</td></tr>
+  <tr><td>Earned allowance</td><td>${d.allowance.toFixed(3)}</td></tr>
+  <tr><td>Normal OT — ${d.normalOT} h × 1.25</td><td>${d.normalPay.toFixed(3)}</td></tr>
+  <tr><td>Friday duty OT — ${d.fridayOT} h × 1.50</td><td>${d.fridayPay.toFixed(3)}</td></tr>
+  <tr><td>Holiday duty OT — ${d.holidayOT} h × 2.00</td><td>${d.holidayPay.toFixed(3)}</td></tr>
+  <tr><td>Sick leave pay earned</td><td>${d.sickEarn.toFixed(3)}</td></tr>
+  <tr><td>Sick leave deduction estimate</td><td>-${d.sickDed.toFixed(3)}</td></tr>
+  <tr class="total"><td>NET SALARY</td><td>${d.net.toFixed(3)} ${cur}</td></tr>
+  </tbody></table><p><b>Daily rate:</b> ${d.dr.toFixed(3)} ${cur} &nbsp; | &nbsp; <b>Hourly rate:</b> ${d.hr.toFixed(3)} ${cur}</p>`;
+  printDocument(`Salary Slip ${d.monthName} ${d.year}`,body);
+}
+function printMonthlyReport(){
+  const d=getMonthReportData(),cur=escPrint(d.cur);
+  const rows=d.rows.map(r=>`<tr><td>${r.day}</td><td>${escPrint(r.status)}</td><td>${escPrint(r.hours)}</td></tr>`).join('');
+  const body=`<h1>Gulf Duty &amp; Salary App</h1><div class="sub">Monthly Attendance &amp; Salary Report — ${escPrint(d.monthName)} ${d.year}</div>
+  ${employeeMetaHtml()}
+  <div class="metrics">
+    <div class="metric"><div class="label">Present / Holiday Duty</div><div class="value">${d.present} days</div></div>
+    <div class="metric"><div class="label">Absent</div><div class="value">${d.absent} days</div></div>
+    <div class="metric"><div class="label">Friday Duty</div><div class="value">${d.fridays} days</div></div>
+  </div>
+  <h2>Daily Attendance</h2><table><thead><tr><th>Day</th><th>Attendance Status</th><th>OT / Duty Hours</th></tr></thead><tbody>${rows}</tbody></table>
+  <h2>Monthly Salary Summary</h2><table class="money"><thead><tr><th>Description</th><th>Amount (${cur})</th></tr></thead><tbody>
+  <tr><td>Basic earned</td><td>${(d.present*d.dr).toFixed(3)}</td></tr>
+  <tr><td>Earned allowance</td><td>${d.allowance.toFixed(3)}</td></tr>
+  <tr><td>Normal OT pay</td><td>${d.normalPay.toFixed(3)}</td></tr>
+  <tr><td>Friday OT pay</td><td>${d.fridayPay.toFixed(3)}</td></tr>
+  <tr><td>Holiday OT pay</td><td>${d.holidayPay.toFixed(3)}</td></tr>
+  <tr><td>Sick leave pay earned</td><td>${d.sickEarn.toFixed(3)}</td></tr>
+  <tr><td>Sick leave deduction estimate</td><td>-${d.sickDed.toFixed(3)}</td></tr>
+  <tr class="total"><td>NET SALARY</td><td>${d.net.toFixed(3)} ${cur}</td></tr>
+  </tbody></table>`;
+  printDocument(`Monthly Report ${d.monthName} ${d.year}`,body);
+}
+
+
 function render(){
   const g=document.getElementById('calGrid');g.innerHTML='';
   const mn=["January","February","March","April","May","June","July","August","September","October","November","December"];
