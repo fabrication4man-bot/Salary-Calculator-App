@@ -124,7 +124,7 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
 <div class="wrap">
   <div class="hdr">
     <div>
-      <span class="hdr-tag">KUWAIT SICK LEAVE ESTIMATE</span>
+      <span class="hdr-tag" id="countrySickTag">KUWAIT SICK LEAVE ESTIMATE</span>
       <h1>Gulf Duty &amp; Salary Pro</h1>
       <p>8h Normal &bull; 1.25x OT &bull; 1.5x Friday &bull; 2.0x Holiday</p>
     </div>
@@ -289,12 +289,27 @@ function setMode(md){
 }
 function chgM(d){m+=d;if(m<0){m=11;y--}if(m>11){m=0;y++}render()}
 function defSt(yr,mo,da){return 'none'}
+// Country-specific private-sector sick-leave pay tiers. These are estimates;
+// eligibility, medical certification, employer policy and the applicable leave-year can affect entitlement.
+const sickLeaveRules={
+  KWD:{name:'Kuwait',tiers:[[15,1],[25,.75],[35,.50],[45,.25],[75,0]],summary:'15 days full pay, next 10 at 75%, next 10 at 50%, next 10 at 25%, next 30 unpaid.'},
+  SAR:{name:'Saudi Arabia',tiers:[[30,1],[90,.75],[120,0]],summary:'first 30 days full pay, next 60 at 75%, next 30 unpaid.'},
+  AED:{name:'UAE',tiers:[[15,1],[45,.50],[90,0]],summary:'first 15 days full pay, next 30 at half pay, next 45 unpaid (after probation).'},
+  QAR:{name:'Qatar',tiers:[[14,1],[42,.50],[84,0]],summary:'first 2 weeks full pay, next 4 weeks at half pay, further sick leave unpaid.'},
+  OMR:{name:'Oman',tiers:[[21,1],[35,.75],[70,.50],[182,.35]],summary:'first 21 days full pay, next 14 at 75%, next 35 at 50%, days 71–182 at 35%.'},
+  BHD:{name:'Bahrain',tiers:[[15,1],[35,.50],[55,0]],summary:'15 days full pay, next 20 at half pay, next 20 unpaid.'}
+};
 function sickTierFraction(index){
-  if(index<=15)return 1;
-  if(index<=25)return .75;
-  if(index<=35)return .50;
-  if(index<=45)return .25;
+  const rule=sickLeaveRules[cfg.currency||'KWD']||sickLeaveRules.KWD;
+  for(const [lastDay,fraction] of rule.tiers){if(index<=lastDay)return fraction;}
   return 0;
+}
+function updateSickLeaveNote(){
+  const code=cfg.currency||'KWD',rule=sickLeaveRules[code]||sickLeaveRules.KWD;
+  const tag=document.getElementById('countrySickTag');
+  if(tag)tag.textContent=rule.name.toUpperCase()+' SICK LEAVE ESTIMATE';
+  const note=document.getElementById('sickNote');
+  if(note)note.textContent=rule.name+' sick-leave estimate: '+rule.summary+' This estimate counts marked sick days by calendar year; the legal entitlement year and eligibility conditions may differ. Verify with HR / the applicable labour authority.';
 }
 function getSickFractionForKey(key){
   let [yr,mo,day]=key.split('-').map(Number), prior=0;
@@ -502,6 +517,7 @@ function printMonthlyReport(){
 
 
 function render(){
+  updateSickLeaveNote();
   const g=document.getElementById('calGrid');g.innerHTML='';
   const mn=["January","February","March","April","May","June","July","August","September","October","November","December"];
   document.getElementById('mLbl').innerText=mn[m]+' '+y;
