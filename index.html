@@ -191,7 +191,7 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
     <div class="row"><span>Food / Other Allowance:</span><b id="rAll">+ 0.000 KWD</b></div>
     <div class="row" style="color:#dc2626"><span>Absent + Sick Deduction:</span><b id="rDed">- 0.000 KWD</b></div>
     <div class="tot"><span>Net Salary:</span><b id="rNet">210.000 KWD</b></div>
-    <div class="tot" style="background:#eff6ff;border-color:#93c5fd"><span>Net Salary in INR:</span><b id="rNetInr" style="color:#1d4ed8">₹ …</b></div>
+    <div class="tot" style="background:#eff6ff;border-color:#93c5fd;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><span>Convert Net Salary To:</span><select id="targetCurrencyInp" aria-label="Convert salary to currency" onchange="saveTargetCurrency()" style="max-width:150px;padding:7px;border:1px solid #93c5fd;border-radius:8px;background:#fff;color:#1d4ed8;font-weight:800"><option value="INR">INR — Indian Rupee</option></select><b id="rNetInr" style="color:#1d4ed8">Loading…</b></div>
     <div class="note" id="sickNote">Kuwait sick-leave estimate: first 15 days full pay, next 10 at 75%, next 10 at 50%, next 10 at 25%, next 30 unpaid. The app counts marked sick days by calendar year.</div>
   </div>
 </div>
@@ -208,6 +208,23 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
   </div>
   <div class="mact"><button class="bcan" onclick="closeM()">Cancel</button><button class="bsave" onclick="saveDay()">Save Entry</button></div>
 </div></div>
+<!-- Share App / QR modal -->
+<div class="share-modal" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareTitle" onclick="if(event.target===this)closeSharePanel()">
+  <div class="share-panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2 class="share-title" id="shareTitle">Share Gulf Duty &amp; Salary Pro</h2><button class="share-action" type="button" onclick="closeSharePanel()" aria-label="Close">✕</button></div>
+    <p class="share-desc">Share the app link or let someone scan this QR code to open the web app.</p>
+    <div class="qr-box"><div id="appQr" aria-label="QR code for app link"></div></div>
+    <div class="share-actions">
+      <button class="share-action primary" type="button" onclick="shareAppLink()">Share App Link</button>
+      <button class="share-action" type="button" onclick="copyAppLink()">Copy Link</button>
+      <button class="share-action green" type="button" onclick="downloadQrImage()">Save QR Image</button>
+      <button class="share-action" type="button" onclick="shareQrImage()">Share QR Image</button>
+    </div>
+    <button class="share-action" type="button" style="width:100%;margin-top:8px" onclick="openAppBrowser()">Open App in Browser</button>
+    <p class="share-foot">QR code opens the official web app. Android APK downloads should be shared only from a published release.</p>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 <script>
 let dt=new Date(),y=dt.getFullYear(),m=dt.getMonth(),selKey=null,tSt='present',qMode='edit';
 let db=JSON.parse(localStorage.getItem('gulf_att_v5')||'{}');
@@ -216,6 +233,8 @@ let cfg=JSON.parse(localStorage.getItem('gulf_cfg_v5')||'{"basic":0,"allow":0,"b
 if(!localStorage.getItem('gulf_cfg_zero_default_v1')){if(Number(cfg.basic)===210){cfg.basic=0;}localStorage.setItem('gulf_cfg_zero_default_v1','1');localStorage.setItem('gulf_cfg_v5',JSON.stringify(cfg));}
 cfg.currency=cfg.currency||'KWD';
 let fxRate=null, fxUpdatedAt='', fxLoading=false;
+let fxRatesByCode={};
+const targetCurrencyKey='gulf_salary_target_currency_v1';
 const employeeNameInput=document.getElementById('employeeNameInp');
 const employeeIdInput=document.getElementById('employeeIdInp');
 employeeNameInput.value=localStorage.getItem('gulf_employee_name_v1')||'';
@@ -226,6 +245,8 @@ employeeIdInput.addEventListener('change',()=>localStorage.setItem('gulf_employe
 const currencyNames={KWD:'Kuwait Dinar',SAR:'Saudi Riyal',AED:'UAE Dirham',QAR:'Qatari Riyal',OMR:'Omani Rial',BHD:'Bahraini Dinar'};
 const fxCacheKey='gulf_fx_cache_v1';
 document.getElementById('currencyInp').value=cfg.currency;
+const targetCurrencySelect=document.getElementById('targetCurrencyInp');
+if(targetCurrencySelect){targetCurrencySelect.value=localStorage.getItem('gulf_salary_target_currency_v1')||'INR';}
 document.getElementById('basicLabel').innerText='Basic ('+cfg.currency+')';
 document.getElementById('allowLabel').innerText='Allowance ('+cfg.currency+')';
 document.getElementById('basicInp').value=cfg.basic;
@@ -275,24 +296,32 @@ function getSickFractionForKey(key){
 
 // App sharing: standalone UI only; salary and attendance calculations remain unchanged.
 const APP_BROWSER_URL = 'https://fabrication4man-bot.github.io/Salary-Calculator-App/';
-const APP_APK_URL = 'https://github.com/fabrication4man-bot/Salary-Calculator-App/releases/download/v1.0.0/Gulf.Salary.apk';
+const APP_APK_URL = 'https://github.com/fabrication4man-bot/Salary-Calculator-App/releases';
 let appQrReady = false;
 function openSharePanel(){
   document.getElementById('shareModal').style.display='flex';
-  if(!appQrReady){
-    const qrTarget=document.getElementById('appQr');
+  renderAppQr();
+}
+function renderAppQr(){
+  const qrTarget=document.getElementById('appQr');
+  if(!qrTarget)return;
+  if(qrTarget.querySelector('canvas, img'))return;
+  if(window.QRCode){
     qrTarget.innerHTML='';
-    if(window.QRCode){
-      new QRCode(qrTarget,{text:APP_BROWSER_URL,width:196,height:196,colorDark:'#0f172a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
-      appQrReady=true;
-    }else{
-      qrTarget.innerHTML='<p style="max-width:230px;text-align:center;font-size:.8rem;color:#b91c1c">QR Code load nahi hua. Internet connect karke dobara kholen.</p>';
-    }
+    new QRCode(qrTarget,{text:APP_BROWSER_URL,width:196,height:196,colorDark:'#0f172a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+  }else{
+    qrTarget.innerHTML='<p style="max-width:230px;text-align:center;font-size:.8rem;color:#b91c1c">QR library load nahi hui. Internet connection check karke page reload karein.</p>';
   }
 }
 function closeSharePanel(){document.getElementById('shareModal').style.display='none'}
 function openAppBrowser(){window.open(APP_BROWSER_URL,'_blank','noopener')}
 function downloadAppApk(){window.open(APP_APK_URL,'_blank','noopener')}
+async function copyAppLink(){
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){await navigator.clipboard.writeText(APP_BROWSER_URL);alert('App link copied. Ab WhatsApp ya kisi app mein paste kar dein.');}
+    else{window.prompt('Copy this app link:',APP_BROWSER_URL);}
+  }catch(e){window.prompt('Copy this app link:',APP_BROWSER_URL);}
+}
 async function shareAppLink(){
   const shareData={title:'Gulf Duty & Salary App',text:'Gulf Duty & Salary App — use in browser or download the Android APK:',url:APP_BROWSER_URL};
   try{
@@ -527,34 +556,63 @@ render();
 loadFxRate();
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.log('Offline cache setup failed', err))); }
 
+function saveTargetCurrency(){
+  const el=document.getElementById('targetCurrencyInp');
+  if(el)localStorage.setItem(targetCurrencyKey,el.value||'INR');
+  render();
+}
+function populateTargetCurrencies(rates){
+  const el=document.getElementById('targetCurrencyInp');
+  if(!el||!rates)return;
+  const current=localStorage.getItem(targetCurrencyKey)||el.value||'INR';
+  const codes=Object.keys(rates).filter(c=>/^[A-Z]{3}$/.test(c)).sort();
+  const preferred=['INR','KWD','SAR','AED','QAR','OMR','BHD','USD','EUR','GBP'];
+  const ordered=[...preferred.filter(c=>codes.includes(c)),...codes.filter(c=>!preferred.includes(c))];
+  el.innerHTML='';
+  ordered.forEach(code=>{
+    const opt=document.createElement('option');opt.value=code;opt.textContent=code+' — '+(new Intl.DisplayNames(['en'],{type:'currency'}).of(code)||code);el.appendChild(opt);
+  });
+  el.value=codes.includes(current)?current:(codes.includes('INR')?'INR':(codes[0]||''));
+  localStorage.setItem(targetCurrencyKey,el.value);
+}
 function updateInrDisplay(net){
   const out=document.getElementById('rNetInr');
-  if(fxRate && Number.isFinite(net)){out.innerText='₹ '+(net*fxRate).toLocaleString('en-IN',{maximumFractionDigits:2,minimumFractionDigits:2});}
-  else out.innerText='Rate unavailable';
+  const target=document.getElementById('targetCurrencyInp')?.value||'INR';
+  const rate=Number(fxRatesByCode[target]);
+  if(Number.isFinite(net)&&Number.isFinite(rate)&&rate>0){
+    try{out.innerText=new Intl.NumberFormat('en-US',{style:'currency',currency:target,maximumFractionDigits:2}).format(net*rate);}
+    catch(e){out.innerText=(net*rate).toFixed(2)+' '+target;}
+  }else out.innerText='Rate unavailable';
 }
 async function loadFxRate(){
   const cur=cfg.currency||'KWD';
-  fxRate=null;
   const rateEl=document.getElementById('fxRate'), updEl=document.getElementById('fxUpdated');
-  rateEl.innerText='Fetching latest '+cur+' → INR rate…';
+  rateEl.innerText='Fetching latest '+cur+' rates…';
   document.getElementById('rNetInr').innerText='Loading rate…';
-  updEl.innerText='Exchange rate is fetched from the internet and refreshed when the app opens or currency changes.';
+  updEl.innerText='Loading currency rates for the selected salary currency.';
   try{
     const response=await fetch('https://open.er-api.com/v6/latest/'+encodeURIComponent(cur),{cache:'no-store'});
     if(!response.ok) throw new Error('Rate service unavailable');
     const data=await response.json();
     if(data.result!=='success'||!data.rates||!Number.isFinite(Number(data.rates.INR))) throw new Error('Invalid exchange rate');
-    fxRate=Number(data.rates.INR); fxUpdatedAt=data.time_last_update_utc||'Latest available';
-    try{localStorage.setItem(fxCacheKey,JSON.stringify({currency:cur,rate:fxRate,updated:fxUpdatedAt,ts:Date.now()}));}catch(e){}
+    fxRatesByCode=data.rates;fxRate=Number(data.rates.INR);fxUpdatedAt=data.time_last_update_utc||'Latest available';
+    try{localStorage.setItem(fxCacheKey,JSON.stringify({currency:cur,rates:fxRatesByCode,rate:fxRate,updated:fxUpdatedAt,ts:Date.now()}));}catch(e){}
+    populateTargetCurrencies(fxRatesByCode);
     rateEl.innerText='1 '+cur+' = ₹ '+fxRate.toLocaleString('en-IN',{maximumFractionDigits:4});
-    updEl.innerText='Rate updated: '+fxUpdatedAt+' (provider daily rate; bank/remittance rate may differ).';
+    updEl.innerText='Rates updated: '+fxUpdatedAt+' (provider daily rates; bank/remittance rates may differ).';
     render();
   }catch(err){
     let cached=null;try{cached=JSON.parse(localStorage.getItem(fxCacheKey)||'null')}catch(e){}
-    if(cached&&cached.currency===cur&&Number.isFinite(Number(cached.rate))){fxRate=Number(cached.rate);rateEl.innerText='1 '+cur+' = ₹ '+fxRate.toLocaleString('en-IN',{maximumFractionDigits:4})+' (saved rate)';updEl.innerText='Internet rate could not be refreshed. Showing saved rate from '+(cached.updated||'an earlier update')+'.';render();}
-    else{fxRate=null;rateEl.innerText='Rate unavailable';updEl.innerText='Connect to the internet and reopen the app to get the latest daily exchange rate.';document.getElementById('rNetInr').innerText='Rate unavailable';}
+    if(cached&&cached.currency===cur&&cached.rates&&Number.isFinite(Number(cached.rates.INR))){
+      fxRatesByCode=cached.rates;fxRate=Number(cached.rates.INR);fxUpdatedAt=cached.updated||'Saved rate';populateTargetCurrencies(fxRatesByCode);
+      rateEl.innerText='1 '+cur+' = ₹ '+fxRate.toLocaleString('en-IN',{maximumFractionDigits:4})+' (saved rate)';
+      updEl.innerText='Internet rate could not be refreshed. Showing saved rates from '+fxUpdatedAt+'.';render();
+    }else{
+      fxRatesByCode={};fxRate=null;rateEl.innerText='Rate unavailable';updEl.innerText='Connect to the internet to load worldwide currency rates.';document.getElementById('rNetInr').innerText='Rate unavailable';
+    }
   }
 }
+
 </script>
 </body>
 </html>
