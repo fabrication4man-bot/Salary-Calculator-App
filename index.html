@@ -13,7 +13,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Gulf Duty & Salary App</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#0b1f42">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="icon-192.png">
@@ -21,24 +21,24 @@
 *{box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:transparent}
 body{margin:0;padding:12px;background:#f1f5f9;color:#0f172a}
 .wrap{max-width:480px;margin:0 auto;padding-bottom:30px}
-.hdr{background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;padding:16px;border-radius:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 12px rgba(15,23,42,.15)}
-.hdr-tag{background:rgba(16,185,129,.2);color:#34d399;font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:6px;display:inline-block;margin-bottom:4px;letter-spacing:.5px}
+.hdr{background:linear-gradient(135deg,#07152f,#163d70);color:#fff;padding:16px;border-radius:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 5px 16px rgba(7,21,47,.18);border:1px solid rgba(227,173,53,.6);position:relative;overflow:hidden}.hdr:after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,#b77a12,#ffe18a,#e3ad35)}
+.hdr-tag{background:rgba(227,173,53,.14);color:#f5ce71;font-size:.65rem;font-weight:800;padding:4px 8px;border:1px solid rgba(227,173,53,.35);border-radius:6px;display:inline-block;margin-bottom:5px;letter-spacing:.5px}
 .hdr h1{margin:0;font-size:1.2rem;font-weight:800}
 .hdr p{margin:4px 0 0;font-size:.75rem;color:#cbd5e1}
 .badge{background:rgba(255,255,255,.12);padding:8px 12px;border-radius:12px;text-align:right;min-width:95px}
 .badge span{font-size:.65rem;color:#cbd5e1;display:block;font-weight:700}
-.badge b{display:block;font-size:1.15rem;color:#34d399;margin-top:2px}
-.card{background:#fff;padding:14px;border-radius:16px;margin-bottom:12px;box-shadow:0 2px 6px rgba(0,0,0,.04);border:1px solid #e2e8f0}
+.badge b{display:block;font-size:1.15rem;color:#f5ce71;margin-top:2px}
+.card{background:#fff;padding:14px;border-radius:16px;margin-bottom:12px;box-shadow:0 3px 10px rgba(11,31,66,.045);border:1px solid #dce4ef}
 .sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.sec-title{font-size:.75rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.3px}
-.rate-pill{background:#f1f5f9;color:#0f172a;font-size:.72rem;font-weight:800;padding:4px 8px;border-radius:6px}
+.sec-title{font-size:.75rem;font-weight:800;color:#334766;text-transform:uppercase;letter-spacing:.35px}
+.rate-pill{background:#fff6dc;color:#61440b;border:1px solid #f0d28a;font-size:.72rem;font-weight:800;padding:4px 8px;border-radius:7px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .inp label{display:block;font-size:.72rem;font-weight:700;color:#64748b;margin-bottom:4px}
 .inp input,.inp select{width:100%;padding:8px;border:1.5px solid #cbd5e1;border-radius:10px;font-weight:800;font-size:.9rem;background:#fff;color:#0f172a}
 .qbar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
 .qbtn{padding:10px 4px;border-radius:10px;border:1.5px solid #e2e8f0;background:#f8fafc;font-size:.75rem;font-weight:800;cursor:pointer;text-align:center;color:#334155;line-height:1.3}
 .qbtn small{display:block;font-size:.62rem;font-weight:600;opacity:.8;margin-top:2px}
-.qbtn.act-edit{background:#0f172a;color:#fff;border-color:#0f172a}
+.qbtn.act-edit{background:#0b1f42;color:#fff;border-color:#e3ad35}
 .qbtn.act-present{background:#16a34a;color:#fff;border-color:#16a34a}
 .qbtn.act-absent{background:#dc2626;color:#fff;border-color:#dc2626}
 .qbtn.act-none{background:#475569;color:#fff;border-color:#475569}
@@ -61,11 +61,11 @@ body{margin:0;padding:12px;background:#f1f5f9;color:#0f172a}
 .cell.holiday{background:#f3e8ff;color:#7e22ce;border-color:#c084fc}
 .cell.sick{background:#ffedd5;color:#c2410c;border-color:#fb923c}
 .sub{font-size:.55rem;font-weight:800;opacity:.85}
-.otb{font-size:.55rem;background:#0f172a;color:#fff;padding:1px 4px;border-radius:4px;margin-top:1px}
+.otb{font-size:.55rem;background:#0b1f42;color:#f5ce71;padding:1px 4px;border-radius:4px;margin-top:1px}
 .row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed #e2e8f0;font-size:.84rem}
 .row b{text-align:right}
-.tot{background:#f0fdf4;border:2px solid #86efac;padding:12px;border-radius:12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center}
-.tot b{font-size:1.35rem;color:#15803d}
+.tot{background:#fff8e6;border:2px solid #e7c56f;padding:12px;border-radius:12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center}
+.tot b{font-size:1.35rem;color:#0b1f42}
 .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.65);display:none;align-items:center;justify-content:center;padding:14px;z-index:99}
 .modal{background:#fff;width:100%;max-width:350px;border-radius:16px;padding:16px;max-height:90vh;overflow:auto}
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
@@ -101,26 +101,50 @@ body{margin:0;padding:12px;background:#f1f5f9;color:#0f172a}
   body{background:#fff!important;padding:0!important}
 }
 
+
+.brandhead{display:flex;align-items:center;gap:13px}.brandmark{width:68px;height:68px;flex:0 0 68px}.brandmark svg{width:100%;height:100%;display:block}
+.brandcopy h1{font-size:22px;margin:0 0 5px;letter-spacing:-.35px;color:#fff}.brandcopy h1 span{color:#e3ad35}
+.brandcopy p{margin:0;color:#dce5f3;font-size:12px}.brandcopy p b{color:#e3ad35;padding:0 4px}
+header{background:linear-gradient(135deg,#07152f,#163d70)!important;border-bottom:3px solid #e3ad35}
+.btn{background:linear-gradient(135deg,#0b1f42,#163d70)!important;border-bottom:2px solid #e3ad35}
+input:focus,select:focus,textarea:focus{outline:2px solid #e3ad35;outline-offset:1px;border-color:#163d70}
+
+
+:root{color-scheme:light}
+button{transition:filter .15s ease,transform .15s ease}
+button:active{filter:brightness(.96);transform:translateY(1px)}
+@media(max-width:360px){body{padding:8px}.hdr{padding:12px}.badge{min-width:82px;padding:7px 9px}.grid3{gap:6px}.card{padding:11px}.brandmark{width:58px;height:58px;flex-basis:58px}.brandcopy h1{font-size:19px}}
+
 </style>
 </head>
-<body>
+<body><header><div class='wrap brandhead'><div class="brandmark" aria-label="Gulf Duty & Salary Pro logo">
+<svg viewBox="0 0 100 100" role="img" aria-label="Industrial gear and calculator">
+<defs><linearGradient id="goldg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe18a"/><stop offset=".55" stop-color="#e3ad35"/><stop offset="1" stop-color="#b77a12"/></linearGradient></defs>
+<circle cx="50" cy="50" r="44" fill="#07152f" stroke="url(#goldg)" stroke-width="3"/>
+<path d="M45 8h10l3 8 8 3 7-4 7 7-4 7 3 8 8 3v10l-8 3-3 8 4 7-7 7-7-4-8 3-3 8H45l-3-8-8-3-7 4-7-7 4-7-3-8-8-3V40l8-3 3-8-4-7 7-7 7 4 8-3z" fill="none" stroke="url(#goldg)" stroke-width="3.5" stroke-linejoin="round"/>
+<path d="M25 68V42l8-7v33M35 68V31l8-8v45M66 68V30l8 7v31" fill="none" stroke="#e3ad35" stroke-width="3" stroke-linecap="round"/>
+<rect x="39" y="45" width="25" height="29" rx="3" fill="#f7f9fd" stroke="url(#goldg)" stroke-width="2.5"/>
+<rect x="43" y="49" width="17" height="5" rx="1.5" fill="#163d70"/>
+<g fill="#163d70"><rect x="43" y="58" width="4" height="4" rx="1"/><rect x="50" y="58" width="4" height="4" rx="1"/><rect x="57" y="58" width="3" height="4" rx="1"/><rect x="43" y="65" width="4" height="4" rx="1"/><rect x="50" y="65" width="4" height="4" rx="1"/><rect x="57" y="65" width="3" height="4" rx="1"/></g>
+<path d="M20 78Q50 89 80 78" fill="none" stroke="url(#goldg)" stroke-width="3.5" stroke-linecap="round"/>
+</svg></div><div class='brandcopy'><h1>Gulf Duty &amp; Salary <span>Pro</span></h1><p>Work Smart · Calculate Easy · Plan Better</p></div></div></header>
 <div class="wrap">
   <div class="hdr">
     <div>
       <span class="hdr-tag">KUWAIT SICK LEAVE ESTIMATE</span>
-      <h1>Gulf Duty &amp; Salary App</h1>
+      <h1>Gulf Duty &amp; Salary Pro</h1>
       <p>8h Normal &bull; 1.25x OT &bull; 1.5x Friday &bull; 2.0x Holiday</p>
     </div>
     <div class="badge"><span>NET PAY</span><b id="topSal">0.000 KD</b></div>
   </div>
   <div class="card" style="padding:10px;display:grid;gap:8px">
-    <button type="button" onclick="openSharePanel()" style="width:100%;padding:12px;border:0;border-radius:12px;background:#2563eb;color:#fff;font-weight:800;font-size:.95rem;cursor:pointer">🔗 Share App / QR Code</button>
+    <button type="button" onclick="openSharePanel()" style="width:100%;padding:12px;border:1px solid #e3ad35;border-radius:12px;background:linear-gradient(135deg,#0b1f42,#163d70);color:#fff;font-weight:800;font-size:.95rem;cursor:pointer">🔗 Share App / QR Code</button>
     <div class="grid3" style="grid-template-columns:1fr 1fr">
       <div class="inp"><label>Employee Name (optional)</label><input id="employeeNameInp" type="text" placeholder="Employee name"></div>
       <div class="inp"><label>Employee ID (optional)</label><input id="employeeIdInp" type="text" placeholder="Employee ID"></div>
     </div>
-    <button type="button" onclick="printSalarySlip()" style="width:100%;padding:12px;border:0;border-radius:12px;background:#15803d;color:#fff;font-weight:800;font-size:.92rem;cursor:pointer">🧾 Print Individual Salary Slip / Save PDF</button>
-    <button type="button" onclick="printMonthlyReport()" style="width:100%;padding:12px;border:0;border-radius:12px;background:#0f172a;color:#fff;font-weight:800;font-size:.92rem;cursor:pointer">📅 Print Monthly Attendance & Salary Report</button>
+    <button type="button" onclick="printSalarySlip()" style="width:100%;padding:12px;border:1px solid #e3ad35;border-radius:12px;background:linear-gradient(135deg,#0b1f42,#163d70);color:#fff;font-weight:800;font-size:.92rem;cursor:pointer">🧾 Print Individual Salary Slip / Save PDF</button>
+    <button type="button" onclick="printMonthlyReport()" style="width:100%;padding:12px;border:1px solid #e3ad35;border-radius:12px;background:#fff6dc;color:#0b1f42;font-weight:800;font-size:.92rem;cursor:pointer">📅 Print Monthly Attendance & Salary Report</button>
   </div>
   <div class="card">
     <div class="sec-hdr"><span class="sec-title">1. Salary Configuration</span><span class="rate-pill" id="topRate">1.010 KWD/HR</span></div>
@@ -374,7 +398,7 @@ function employeeMetaHtml(){
 }
 function printSalarySlip(){
   const d=getMonthReportData(), cur=escPrint(d.cur);
-  const body=`<h1>Gulf Duty &amp; Salary App</h1><div class="sub">Individual Salary Slip — ${escPrint(d.monthName)} ${d.year}</div>
+  const body=`<h1>Gulf Duty &amp; Salary Pro</h1><div class="sub">Individual Salary Slip — ${escPrint(d.monthName)} ${d.year}</div>
   ${employeeMetaHtml()}
   <div class="metrics">
     <div class="metric"><div class="label">Present / Holiday Duty Days</div><div class="value">${d.present}</div></div>
@@ -396,7 +420,7 @@ function printSalarySlip(){
 function printMonthlyReport(){
   const d=getMonthReportData(),cur=escPrint(d.cur);
   const rows=d.rows.map(r=>`<tr><td>${r.day}</td><td>${escPrint(r.status)}</td><td>${escPrint(r.hours)}</td></tr>`).join('');
-  const body=`<h1>Gulf Duty &amp; Salary App</h1><div class="sub">Monthly Attendance &amp; Salary Report — ${escPrint(d.monthName)} ${d.year}</div>
+  const body=`<h1>Gulf Duty &amp; Salary Pro</h1><div class="sub">Monthly Attendance &amp; Salary Report — ${escPrint(d.monthName)} ${d.year}</div>
   ${employeeMetaHtml()}
   <div class="metrics">
     <div class="metric"><div class="label">Present / Holiday Duty</div><div class="value">${d.present} days</div></div>
