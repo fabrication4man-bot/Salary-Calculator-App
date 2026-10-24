@@ -97,6 +97,9 @@ body{margin:0;padding:12px;background:#f1f5f9;color:#0f172a}
 .share-foot{font-size:.7rem;color:#64748b;line-height:1.4;margin-top:10px;text-align:center}
 
 .print-only-note{font-size:12px;color:#64748b}
+.app-footer{margin:14px 0 8px;padding:14px;background:#fff;border:1px solid #dce4ef;border-radius:16px;box-shadow:0 3px 10px rgba(11,31,66,.045)}
+.app-footer h2{margin:0 0 5px;font-size:.95rem;color:#0b1f42}.app-footer p{margin:0 0 10px;font-size:.75rem;line-height:1.45;color:#64748b}
+.footer-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.footer-action{display:block;width:100%;padding:11px 8px;border:1px solid #dce4ef;border-radius:10px;background:#f8fafc;color:#0b1f42;font-weight:800;font-size:.78rem;cursor:pointer}.footer-action.primary{background:linear-gradient(135deg,#0b1f42,#163d70);color:#fff;border-color:#e3ad35}.footer-action.green{background:#15803d;color:#fff;border-color:#15803d}
 @media print{
   body{background:#fff!important;padding:0!important}
 }
@@ -138,13 +141,11 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
     <div class="badge"><span>NET PAY</span><b id="topSal">0.000 KD</b></div>
   </div>
   <div class="card" style="padding:10px;display:grid;gap:8px">
-    <button type="button" onclick="openSharePanel()" style="width:100%;padding:12px;border:1px solid #e3ad35;border-radius:12px;background:linear-gradient(135deg,#0b1f42,#163d70);color:#fff;font-weight:800;font-size:.95rem;cursor:pointer">🔗 Share App / QR Code</button>
+    <div class="sec-hdr"><span class="sec-title">Employee Details (Optional)</span></div>
     <div class="grid3" style="grid-template-columns:1fr 1fr">
       <div class="inp"><label>Employee Name (optional)</label><input id="employeeNameInp" type="text" placeholder="Employee name"></div>
       <div class="inp"><label>Employee ID (optional)</label><input id="employeeIdInp" type="text" placeholder="Employee ID"></div>
     </div>
-    <button type="button" onclick="printSalarySlip()" style="width:100%;padding:12px;border:1px solid #e3ad35;border-radius:12px;background:linear-gradient(135deg,#0b1f42,#163d70);color:#fff;font-weight:800;font-size:.92rem;cursor:pointer">🧾 Print Individual Salary Slip / Save PDF</button>
-    <button type="button" onclick="printMonthlyReport()" style="width:100%;padding:12px;border:1px solid #e3ad35;border-radius:12px;background:#fff6dc;color:#0b1f42;font-weight:800;font-size:.92rem;cursor:pointer">📅 Print Monthly Attendance & Salary Report</button>
   </div>
   <div class="card">
     <div class="sec-hdr"><span class="sec-title">1. Salary Configuration</span><span class="rate-pill" id="topRate">1.010 KWD/HR</span></div>
@@ -194,6 +195,18 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
     <div class="tot" style="background:#eff6ff;border-color:#93c5fd;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><span>Convert Net Salary To:</span><select id="targetCurrencyInp" aria-label="Convert salary to currency" onchange="saveTargetCurrency()" style="max-width:150px;padding:7px;border:1px solid #93c5fd;border-radius:8px;background:#fff;color:#1d4ed8;font-weight:800"><option value="INR">INR — Indian Rupee</option></select><b id="rNetInr" style="color:#1d4ed8">Loading…</b></div>
     <div class="note" id="sickNote">Kuwait sick-leave estimate: first 15 days full pay, next 10 at 75%, next 10 at 50%, next 10 at 25%, next 30 unpaid. The app counts marked sick days by calendar year.</div>
   </div>
+  <div class="app-footer">
+    <h2>App Actions</h2>
+    <p>Share one common app link or QR code. Anyone opening it can use the web app or download the Android APK here.</p>
+    <div class="footer-actions">
+      <button type="button" class="footer-action primary" onclick="openSharePanel()">🔗 Share App / QR Code</button>
+      <button type="button" class="footer-action green" onclick="downloadAppApk()">⬇ Download Android APK</button>
+      <button type="button" class="footer-action" onclick="shareApkLink()">📤 Share Direct APK Link</button>
+      <button type="button" class="footer-action" onclick="openAppBrowser()">🌐 Open Web App in Browser</button>
+      <button type="button" class="footer-action" onclick="printSalarySlip()">🧾 Print Salary Slip / Save PDF</button>
+      <button type="button" class="footer-action" onclick="printMonthlyReport()">📅 Monthly Attendance &amp; Salary Report</button>
+    </div>
+  </div>
 </div>
 <div class="modal-bg" id="modal"><div class="modal">
   <div style="font-weight:800;font-size:1.05rem" id="mDate">Date</div>
@@ -212,16 +225,18 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
 <div class="share-modal" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareTitle" onclick="if(event.target===this)closeSharePanel()">
   <div class="share-panel">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2 class="share-title" id="shareTitle">Share Gulf Duty &amp; Salary Pro</h2><button class="share-action" type="button" onclick="closeSharePanel()" aria-label="Close">✕</button></div>
-    <p class="share-desc">Share the app link or let someone scan this QR code to open the web app.</p>
+    <p class="share-desc">The shared link and QR code open the common app page. From there, users can open the web app or download the Android APK.</p>
     <div class="qr-box"><div id="appQr" aria-label="QR code for app link"></div></div>
     <div class="share-actions">
       <button class="share-action primary" type="button" onclick="shareAppLink()">Share App Link</button>
       <button class="share-action" type="button" onclick="copyAppLink()">Copy Link</button>
       <button class="share-action green" type="button" onclick="downloadQrImage()">Save QR Image</button>
       <button class="share-action" type="button" onclick="shareQrImage()">Share QR Image</button>
+      <button class="share-action primary" type="button" onclick="openAppBrowser()">Open Web App in Browser</button>
+      <button class="share-action green" type="button" onclick="downloadAppApk()">Download Android APK</button>
+      <button class="share-action" type="button" onclick="shareApkLink()">Share Direct APK Link</button>
     </div>
-    <button class="share-action" type="button" style="width:100%;margin-top:8px" onclick="openAppBrowser()">Open App in Browser</button>
-    <p class="share-foot">QR code opens the official web app. Android APK downloads should be shared only from a published release.</p>
+    <p class="share-foot">QR code and app link open the common app page. The direct APK option links to the published Android release.</p>
   </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
@@ -296,7 +311,7 @@ function getSickFractionForKey(key){
 
 // App sharing: standalone UI only; salary and attendance calculations remain unchanged.
 const APP_BROWSER_URL = 'https://fabrication4man-bot.github.io/Salary-Calculator-App/';
-const APP_APK_URL = 'https://github.com/fabrication4man-bot/Salary-Calculator-App/releases';
+const APP_APK_URL = 'https://github.com/fabrication4man-bot/Salary-Calculator-App/releases/download/v1.0.0/Gulf.Salary.apk';
 let appQrReady = false;
 function openSharePanel(){
   document.getElementById('shareModal').style.display='flex';
@@ -323,12 +338,20 @@ async function copyAppLink(){
   }catch(e){window.prompt('Copy this app link:',APP_BROWSER_URL);}
 }
 async function shareAppLink(){
-  const shareData={title:'Gulf Duty & Salary App',text:'Gulf Duty & Salary App — use in browser or download the Android APK:',url:APP_BROWSER_URL};
+  const shareData={title:'Gulf Duty & Salary App',text:'Gulf Duty & Salary App — open the web app in your browser or use the Download Android APK option on the app page:',url:APP_BROWSER_URL};
   try{
     if(navigator.share){await navigator.share(shareData);}
     else if(navigator.clipboard && navigator.clipboard.writeText){await navigator.clipboard.writeText(APP_BROWSER_URL);alert('App link copied. Ab WhatsApp ya kisi app mein paste kar dein.');}
     else{window.prompt('Copy this app link:',APP_BROWSER_URL);}
   }catch(e){if(e.name!=='AbortError')window.prompt('Copy this app link:',APP_BROWSER_URL);}
+}
+async function shareApkLink(){
+  const shareData={title:'Gulf Duty & Salary App — Android APK',text:'Download the Gulf Duty & Salary Android APK directly:',url:APP_APK_URL};
+  try{
+    if(navigator.share){await navigator.share(shareData);}
+    else if(navigator.clipboard && navigator.clipboard.writeText){await navigator.clipboard.writeText(APP_APK_URL);alert('Direct APK link copied. Ab WhatsApp ya kisi app mein paste kar dein.');}
+    else{window.prompt('Copy this direct APK link:',APP_APK_URL);}
+  }catch(e){if(e.name!=='AbortError')window.prompt('Copy this direct APK link:',APP_APK_URL);}
 }
 function getQrCanvas(){
   const qr=document.getElementById('appQr');
