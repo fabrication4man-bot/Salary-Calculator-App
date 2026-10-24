@@ -1,28 +1,28 @@
 {
-  "background_color": "#f8f1e4",
+  "id": "/Salary-Calculator-App/",
+  "name": "Gulf Duty & Salary Pro",
+  "short_name": "Gulf Salary Pro",
+  "description": "Gulf duty, salary, attendance, overtime, sick leave and worldwide currency conversion.",
+  "lang": "en",
   "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "name": "Gulf Duty &amp; Salary App",
   "orientation": "any",
-  "scope": "/",
-  "short_name": "Gulf Salaru",
-  "start_url": "/",
-  "theme_color": "#8b1e1e",
+  "background_color": "#f8f1e4",
+  "theme_color": "#0b1f42",
   "icons": [
     {
-      "src": "https://fabrication4man-bot.github.io/Salary-Calculator-App/icon-192.png",
-      "type": "image/png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
-      "isSquare": true,
-      "isPng": true,
-      "isWebp": false,
-      "isJpg": false,
-      "width": 192,
-      "is512x512": false,
-      "is256x256": false,
-      "is192x192": true
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     }
-  ],
-  "id": "/sSalary-Calculator-App/",
-  "description": "Gulf duty, salary, attendance, &amp; sick leave and currency conversion to INR."
+  ]
 }

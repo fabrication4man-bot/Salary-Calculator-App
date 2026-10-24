@@ -11,12 +11,12 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Gulf Duty & Salary App</title>
+<title>Gulf Duty &amp; Salary Pro</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0b1f42">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <style>
 *{box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:transparent}
 body{margin:0;padding:12px;background:#f1f5f9;color:#0f172a}
@@ -120,17 +120,7 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
 
 </style>
 </head>
-<body><header><div class='wrap brandhead'><div class="brandmark" aria-label="Gulf Duty & Salary Pro logo">
-<svg viewBox="0 0 100 100" role="img" aria-label="Industrial gear and calculator">
-<defs><linearGradient id="goldg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe18a"/><stop offset=".55" stop-color="#e3ad35"/><stop offset="1" stop-color="#b77a12"/></linearGradient></defs>
-<circle cx="50" cy="50" r="44" fill="#07152f" stroke="url(#goldg)" stroke-width="3"/>
-<path d="M45 8h10l3 8 8 3 7-4 7 7-4 7 3 8 8 3v10l-8 3-3 8 4 7-7 7-7-4-8 3-3 8H45l-3-8-8-3-7 4-7-7 4-7-3-8-8-3V40l8-3 3-8-4-7 7-7 7 4 8-3z" fill="none" stroke="url(#goldg)" stroke-width="3.5" stroke-linejoin="round"/>
-<path d="M25 68V42l8-7v33M35 68V31l8-8v45M66 68V30l8 7v31" fill="none" stroke="#e3ad35" stroke-width="3" stroke-linecap="round"/>
-<rect x="39" y="45" width="25" height="29" rx="3" fill="#f7f9fd" stroke="url(#goldg)" stroke-width="2.5"/>
-<rect x="43" y="49" width="17" height="5" rx="1.5" fill="#163d70"/>
-<g fill="#163d70"><rect x="43" y="58" width="4" height="4" rx="1"/><rect x="50" y="58" width="4" height="4" rx="1"/><rect x="57" y="58" width="3" height="4" rx="1"/><rect x="43" y="65" width="4" height="4" rx="1"/><rect x="50" y="65" width="4" height="4" rx="1"/><rect x="57" y="65" width="3" height="4" rx="1"/></g>
-<path d="M20 78Q50 89 80 78" fill="none" stroke="url(#goldg)" stroke-width="3.5" stroke-linecap="round"/>
-</svg></div><div class='brandcopy'><h1>Gulf Duty &amp; Salary <span>Pro</span></h1><p>Work Smart · Calculate Easy · Plan Better</p></div></div></header>
+<body><header><div class='wrap brandhead'><div class="brandmark" aria-label="Gulf Duty & Salary Pro logo"><img src="./icon-192.png" alt="Gulf Duty & Salary Pro" width="68" height="68" style="width:100%;height:100%;object-fit:contain;display:block"></div><div class='brandcopy'><h1>Gulf Duty &amp; Salary <span>Pro</span></h1><p>Work Smart · Calculate Easy · Plan Better</p></div></div></header>
 <div class="wrap">
   <div class="hdr">
     <div>
@@ -206,7 +196,15 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
       <button type="button" class="footer-action" onclick="printSalarySlip()">🧾 Print Salary Slip / Save PDF</button>
       <button type="button" class="footer-action" onclick="printMonthlyReport()">📅 Monthly Attendance &amp; Salary Report</button>
     </div>
+
   </div>
+  <section class="app-footer" aria-labelledby="feedbackTitle">
+    <h2 id="feedbackTitle">Help &amp; Feedback</h2>
+    <p>Found a calculation error or have a suggestion? Contact us on WhatsApp.</p>
+    <div class="footer-actions">
+      <button type="button" class="footer-action green" style="grid-column:1/-1" onclick="openFeedbackWhatsApp()">💬 Contact on WhatsApp</button>
+    </div>
+  </section>
 </div>
 <div class="modal-bg" id="modal"><div class="modal">
   <div style="font-weight:800;font-size:1.05rem" id="mDate">Date</div>
@@ -385,6 +383,15 @@ async function shareQrImage(){
       }
     }catch(e){if(e.name!=='AbortError'){downloadQrImage();}}
   },'image/png');
+}
+
+function openFeedbackWhatsApp(){
+  const message =
+    'Hello, I have feedback about Gulf Duty & Salary Pro.\\n\\n' +
+    'Feedback type: Calculation Error / Suggestion / Other\\n\\n' +
+    'Details:';
+  const url = 'https://wa.me/96556594786?text=' + encodeURIComponent(message);
+  window.open(url, '_blank', 'noopener');
 }
 
 function escPrint(s){
