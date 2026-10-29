@@ -60,6 +60,9 @@ body{margin:0;padding:12px;background:#f1f5f9;color:#0f172a}
 .cell.friday{background:#dbeafe;color:#1d4ed8;border-color:#60a5fa}
 .cell.holiday{background:#f3e8ff;color:#7e22ce;border-color:#c084fc}
 .cell.sick{background:#ffedd5;color:#c2410c;border-color:#fb923c}
+.cell.auto-holiday{background:#f3e8ff;color:#6b21a8;border-color:#c084fc}
+.cell .holiday-name{font-size:.48rem;line-height:1.05;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 1px;font-weight:800}
+.cell.has-holiday{box-shadow:inset 0 -3px 0 #9333ea}
 .sub{font-size:.55rem;font-weight:800;opacity:.85}
 .otb{font-size:.55rem;background:#0b1f42;color:#f5ce71;padding:1px 4px;border-radius:4px;margin-top:1px}
 .row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed #e2e8f0;font-size:.84rem}
@@ -140,7 +143,7 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
   <div class="card">
     <div class="sec-hdr"><span class="sec-title">1. Salary Configuration</span><span class="rate-pill" id="topRate">1.010 KWD/HR</span></div>
     <div class="grid3">
-      <div class="inp"><label>Salary Currency</label><select id="currencyInp" onchange="saveCfg()"><option value="KWD">Kuwait (KWD)</option><option value="SAR">Saudi (SAR)</option><option value="AED">UAE (AED)</option><option value="QAR">Qatar (QAR)</option><option value="OMR">Oman (OMR)</option><option value="BHD">Bahrain (BHD)</option></select></div>
+      <div class="inp"><label>Country / Salary Currency</label><select id="currencyInp" onchange="saveCfg()"><option value="KWD">Kuwait (KWD)</option><option value="SAR">Saudi (SAR)</option><option value="AED">UAE (AED)</option><option value="QAR">Qatar (QAR)</option><option value="OMR">Oman (OMR)</option><option value="BHD">Bahrain (BHD)</option></select></div>
       <div class="inp"><label id="basicLabel">Basic (KWD)</label><input type="number" id="basicInp" value="0" min="0" onchange="saveCfg()"></div>
       <div class="inp"><label id="allowLabel">Allowance (KWD)</label><input type="number" id="allowInp" value="0" onchange="saveCfg()"></div>
       <div class="inp"><label>OT Base</label><select id="baseInp" onchange="saveCfg()"><option value="26">26 Days</option></select></div>
@@ -170,6 +173,13 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
       <span class="leg-pill" style="background:#ffedd5;color:#c2410c"><i class="dot" style="background:#ea580c"></i>Sick Leave</span>
     </div>
     <div class="cal" id="calGrid"></div>
+    <div class="note" id="gccCalendarNote">GCC public holidays appear inside this calendar based on the selected country. Purple HOL dates are calendar holidays; estimated Islamic dates must be checked against the official announcement. Tap a holiday date and choose Holiday if you worked that day so holiday duty pay is calculated.</div>
+    <div class="note" style="background:#eff6ff;border-color:#93c5fd;color:#1e3a8a;display:grid;gap:7px" aria-live="polite">
+      <div><b>Live GCC Holiday Updates</b></div>
+      <div id="gccLiveStatus">Checking holiday data…</div>
+      <div class="row" style="justify-content:flex-start;gap:8px;flex-wrap:wrap"><button type="button" class="chip" onclick="refreshGccHolidays(true)">↻ Refresh holidays</button><span id="gccLiveUpdated">Last update: not yet checked</span></div>
+      <small>Data source: Holiday Atlas public holiday API. Islamic dates may be estimates; always confirm with the relevant government announcement. If the service is unavailable, the app uses its last saved data.</small>
+    </div>
   </div>
   <div class="card">
     <div class="sec-hdr"><span class="sec-title">3. Monthly Salary Breakdown</span><select id="modeInp" onchange="saveCfg()" style="padding:4px 8px;border-radius:6px;border:1px solid #cbd5e1;font-weight:700;font-size:.72rem"><option value="earned">Earned Salary (Duty Days Only)</option></select></div>
@@ -269,6 +279,7 @@ cfg.mode='earned';
 document.getElementById('modeInp').value='earned';
 
 function saveCfg(){
+  const previousCurrency=cfg.currency;
   cfg.basic=Math.max(0,parseFloat(document.getElementById('basicInp').value)||0);
   cfg.allow=parseFloat(document.getElementById('allowInp').value)||0;
   cfg.base=26;
@@ -278,6 +289,7 @@ function saveCfg(){
   document.getElementById('basicLabel').innerText='Basic ('+cfg.currency+')';
   document.getElementById('allowLabel').innerText='Allowance ('+cfg.currency+')';
   localStorage.setItem('gulf_cfg_v5',JSON.stringify(cfg));render();
+  if(previousCurrency!==cfg.currency && typeof refreshGccHolidays==='function') refreshGccHolidays(false);
   loadFxRate();
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.log('Offline cache setup failed', err))); }
 }
@@ -287,7 +299,7 @@ function setMode(md){
   let lbl={edit:'Detailed OT Mode',present:'Quick Present Mode',absent:'Quick Absent Mode',none:'Quick Clear Mode'};
   document.getElementById('modeBadge').innerText=lbl[md];
 }
-function chgM(d){m+=d;if(m<0){m=11;y--}if(m>11){m=0;y++}render()}
+function chgM(d){m+=d;if(m<0){m=11;y--}if(m>11){m=0;y++}render();if(typeof refreshGccHolidays==='function')refreshGccHolidays(false)}
 function defSt(yr,mo,da){return 'none'}
 function sickTierFraction(index){
   if(index<=15)return 1;
@@ -467,33 +479,6 @@ function getPrintQrDataUrl(){
     return img && img.src ? img.src : '';
   }catch(e){return '';}
 }
-const holidayStorageKey='gulf_gcc_holidays_v1';
-function getGccHolidays(){try{const x=JSON.parse(localStorage.getItem(holidayStorageKey)||'[]');return Array.isArray(x)?x:[];}catch(e){return [];}}
-function addGccHoliday(){
-  const country=document.getElementById('holidayCountry').value;
-  const date=document.getElementById('holidayDate').value;
-  const name=document.getElementById('holidayName').value.trim();
-  if(!date||!name){alert('Holiday date aur naam dono bharein.');return;}
-  const list=getGccHolidays();
-  if(list.some(h=>h.country===country&&h.date===date&&h.name.toLowerCase()===name.toLowerCase())){alert('Ye holiday pehle se saved hai.');return;}
-  list.push({country,date,name,addedAt:new Date().toISOString()});
-  localStorage.setItem(holidayStorageKey,JSON.stringify(list));
-  document.getElementById('holidayName').value='';
-  renderGccHolidays();
-  alert('Holiday saved. Calendar mein attendance ko overwrite nahi kiya gaya.');
-}
-function renderGccHolidays(){
-  const el=document.getElementById('holidayList');if(!el)return;
-  const country=document.getElementById('holidayCountry').value;
-  const list=getGccHolidays().filter(h=>h.country===country).sort((a,b)=>a.date.localeCompare(b.date));
-  el.innerHTML=list.length?list.map((h,i)=>`<div class="row"><span><b>${escPrint(h.date)}</b> — ${escPrint(h.name)}</span><button type="button" class="chip" onclick="deleteGccHoliday('${encodeURIComponent(h.date)}','${encodeURIComponent(h.name)}','${encodeURIComponent(h.country)}')">Delete</button></div>`).join(''):'No holidays added for this country yet.';
-}
-function deleteGccHoliday(date,name,country){
-  if(!confirm('Is holiday entry ko delete karein?'))return;
-  const d=decodeURIComponent(date),n=decodeURIComponent(name),c=decodeURIComponent(country);
-  localStorage.setItem(holidayStorageKey,JSON.stringify(getGccHolidays().filter(h=>!(h.date===d&&h.name===n&&h.country===c))));
-  renderGccHolidays();
-}
 function getVacationData(){
   const val=id=>document.getElementById(id).value;
   return {entitlement:Math.max(0,Number(val('vacEntitlement'))||0),used:Math.max(0,Number(val('vacUsed'))||0),basic:Math.max(0,Number(val('vacBasic'))||0),salaryDue:Math.max(0,Number(val('vacSalaryDue'))||0),prevOT:Math.max(0,Number(val('vacPrevOT'))||0),currentOT:Math.max(0,Number(val('vacCurrentOT'))||0),other:Number(val('vacOther'))||0,deduct:Math.max(0,Number(val('vacDeduct'))||0),start:val('vacStart'),rejoin:val('vacReturn')};
@@ -534,9 +519,8 @@ function printVacationSettlement(){
   printDocument('Vacation Final Settlement',body);
 }
 document.addEventListener('DOMContentLoaded',()=>{
-  const hc=document.getElementById('holidayCountry');if(hc)hc.addEventListener('change',renderGccHolidays);
   ['vacEntitlement','vacUsed','vacBasic','vacSalaryDue','vacPrevOT','vacCurrentOT','vacOther','vacDeduct','vacStart','vacReturn'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('change',updateVacationTotals);});
-  renderGccHolidays();loadVacationData();
+  loadVacationData();
 });
 
 function employeeMetaHtml(){
@@ -592,6 +576,90 @@ function printMonthlyReport(){
 }
 
 
+// GCC public holidays shown directly inside the existing attendance calendar.
+// Live data is fetched from Holiday Atlas; last successful results are cached locally for offline use.
+const gccCountryByCurrency={KWD:'Kuwait',SAR:'Saudi Arabia',AED:'United Arab Emirates',QAR:'Qatar',OMR:'Oman',BHD:'Bahrain'};
+const gccIsoByCurrency={KWD:'KW',SAR:'SA',AED:'AE',QAR:'QA',OMR:'OM',BHD:'BH'};
+const gccHolidayApiBase='https://p4c6e4mu4k5sg4fwnertd2zgwi0hordn.lambda-url.eu-north-1.on.aws/api/holidays';
+const gccHolidayCacheKey='gulf_gcc_live_holidays_v1';
+let gccHolidayCache={};
+try{gccHolidayCache=JSON.parse(localStorage.getItem(gccHolidayCacheKey)||'{}')||{};}catch(e){gccHolidayCache={};}
+let gccRefreshInProgress=false;
+const gccFixedHolidayRules={
+  Kuwait:[['02-25','National Day'],['02-26','Liberation Day']],
+  'Saudi Arabia':[['02-22','Founding Day'],['09-23','Saudi National Day']],
+  'United Arab Emirates':[['12-02','Eid Al Etihad / National Day'],['12-03','Eid Al Etihad holiday']],
+  Qatar:[['12-18','Qatar National Day']],
+  Oman:[['11-20','Oman National Day']],
+  Bahrain:[['12-16','Bahrain National Day'],['12-17','National Day Holiday']]
+};
+const gccIslamicEstimates={
+  2026:[['2026-03-20','Eid al-Fitr (estimated)'],['2026-05-27','Eid al-Adha (estimated)'],['2026-06-16','Islamic New Year (estimated)'],['2026-08-25','Prophet’s Birthday (estimated)']],
+  2027:[['2027-03-10','Eid al-Fitr (estimated)'],['2027-05-17','Eid al-Adha (estimated)'],['2027-06-06','Islamic New Year (estimated)'],['2027-08-15','Prophet’s Birthday (estimated)']],
+  2028:[['2028-02-27','Eid al-Fitr (estimated)'],['2028-05-06','Eid al-Adha (estimated)'],['2028-05-25','Islamic New Year (estimated)'],['2028-08-04','Prophet’s Birthday (estimated)']],
+  2029:[['2029-02-15','Eid al-Fitr (estimated)'],['2029-04-25','Eid al-Adha (estimated)'],['2029-05-14','Islamic New Year (estimated)'],['2029-07-24','Prophet’s Birthday (estimated)']],
+  2030:[['2030-02-05','Eid al-Fitr (estimated)'],['2030-04-14','Eid al-Adha (estimated)'],['2030-05-04','Islamic New Year (estimated)'],['2030-07-13','Prophet’s Birthday (estimated)']]
+};
+function getSelectedGccCountry(){return gccCountryByCurrency[cfg.currency]||'Kuwait';}
+function gccCacheKey(country,year){return (gccIsoByCurrency[cfg.currency]||'KW')+'-'+year;}
+function normalizeGccApiResponse(json){
+  const rows=Array.isArray(json)?json:(Array.isArray(json?.holidays)?json.holidays:Array.isArray(json?.data)?json.data:[]);
+  return rows.map(h=>{
+    const date=h.date||h.startDate||h.start_date||h.day;
+    const title=typeof h.title==='string'?h.title:(h.title?.en||h.title?.original||h.name||h.localName||h.local_name||h.description?.en||'Public holiday');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(String(date||'')))return null;
+    return {date:String(date),name:String(title),estimated:!!(h.estimated||h.isEstimated||h.is_estimated),source:h.sourceUrl||h.source_url||''};
+  }).filter(Boolean);
+}
+function setGccLiveStatus(message,updated){
+  const status=document.getElementById('gccLiveStatus'),stamp=document.getElementById('gccLiveUpdated');
+  if(status)status.textContent=message;
+  if(stamp&&updated){const d=new Date(updated);stamp.textContent='Last successful update: '+(isNaN(d.getTime())?'unknown':d.toLocaleString());}
+}
+function getCachedGccHolidays(country,year){
+  const code=gccIsoByCurrency[cfg.currency]||'KW',entry=gccHolidayCache[code+'-'+year];
+  return entry&&Array.isArray(entry.holidays)?entry.holidays:[];
+}
+async function refreshGccHolidays(force){
+  if(gccRefreshInProgress)return;
+  const country=getSelectedGccCountry(),code=gccIsoByCurrency[cfg.currency]||'KW',years=[y];
+  // Keep the displayed year current; also refresh next year when the current month is December.
+  if(m===11)years.push(y+1);
+  const stale=years.some(yr=>{const e=gccHolidayCache[code+'-'+yr];return !e||!e.updatedAt||(Date.now()-new Date(e.updatedAt).getTime()>12*60*60*1000);});
+  if(!force&&!stale){const e=gccHolidayCache[code+'-'+y];setGccLiveStatus('Using saved live holiday data for '+country+'.',e?.updatedAt);render();return;}
+  if(!navigator.onLine){const e=gccHolidayCache[code+'-'+y];setGccLiveStatus(e?'Offline — showing last saved holiday data.':'Offline — no live holiday data saved yet; showing built-in estimates.',e?.updatedAt);render();return;}
+  gccRefreshInProgress=true;setGccLiveStatus('Updating public holidays for '+country+'…');
+  try{
+    for(const yr of years){
+      const url=gccHolidayApiBase+'?countryCode='+encodeURIComponent(code)+'&year='+yr;
+      const response=await fetch(url,{method:'GET',headers:{'Accept':'application/json'},cache:'no-store'});
+      if(!response.ok)throw new Error('Holiday service returned HTTP '+response.status);
+      const json=await response.json(),holidays=normalizeGccApiResponse(json);
+      if(!holidays.length)throw new Error('Holiday service returned no usable holiday dates');
+      gccHolidayCache[code+'-'+yr]={country:country,year:yr,holidays:holidays,updatedAt:new Date().toISOString(),source:'Holiday Atlas public API'};
+      localStorage.setItem(gccHolidayCacheKey,JSON.stringify(gccHolidayCache));
+    }
+    const e=gccHolidayCache[code+'-'+y];setGccLiveStatus('Live update successful for '+country+'. '+(e?.holidays?.length||0)+' dates loaded for '+y+'.',e?.updatedAt);render();
+  }catch(err){
+    const e=gccHolidayCache[code+'-'+y];
+    setGccLiveStatus(e?'Update failed — using last saved live data.':'Live update unavailable — showing built-in holiday estimates where available.',e?.updatedAt);
+    console.warn('GCC holiday refresh failed:',err);render();
+  }finally{gccRefreshInProgress=false;}
+}
+function getGccHolidayForDate(dateKey){
+  const country=getSelectedGccCountry(),parts=dateKey.split('-'),year=Number(parts[0]),monthDay=parts[1].padStart(2,'0')+'-'+parts[2].padStart(2,'0');
+  const live=getCachedGccHolidays(country,year).find(h=>h.date===dateKey);
+  if(live)return {name:live.name,estimated:live.estimated,source:'live'};
+  // If a live dataset exists for this country/year, trust it as the full year rather than mixing in stale rules.
+  const code=gccIsoByCurrency[cfg.currency]||'KW';
+  if(gccHolidayCache[code+'-'+year]?.holidays?.length)return null;
+  const fixed=(gccFixedHolidayRules[country]||[]).find(h=>h[0]===monthDay);
+  if(fixed)return {name:fixed[1],estimated:false,source:'built-in'};
+  const islamic=(gccIslamicEstimates[year]||[]).find(h=>h[0]===dateKey);
+  if(islamic)return {name:islamic[1],estimated:true,source:'built-in estimate'};
+  return null;
+}
+
 function render(){
   const g=document.getElementById('calGrid');g.innerHTML='';
   const mn=["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -602,11 +670,17 @@ function render(){
   let p=0,a=0,f=0,sl=0,not=0,fot=0,hot=0,sickDed=0,sickEarn=0,hasMonthEntries=false;
   let dr=cfg.basic/26,hr=dr/8,daily=cfg.basic/30,absentDaily=cfg.basic/26;
   for(let d=1;d<=td;d++){
-    let k=`${y}-${m+1}-${d}`,r=db[k]||{status:defSt(y,m,d),hours:0};
+    let k=`${y}-${m+1}-${d}`,holidayDateKey=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,r=db[k]||{status:defSt(y,m,d),hours:0};
     if(r.status && r.status!=='none')hasMonthEntries=true;
-    let c=document.createElement('div');c.className='cell '+r.status;
-    let labels={present:'P',absent:'A',friday:'FRI',holiday:'HOL',sick:'SL',none:'-'};
-    c.innerHTML=`<span>${d}</span><span class="sub">${labels[r.status]||'-'}</span>`;
+    const gccHoliday=getGccHolidayForDate(holidayDateKey);
+    let c=document.createElement('div');
+    c.className='cell '+r.status+(gccHoliday?' has-holiday':'')+(!gccHoliday?'':'');
+    if(gccHoliday && (!r.status || r.status==='none'))c.className='cell auto-holiday has-holiday';
+    let labels={present:'P',absent:'A',friday:'FRI',holiday:'HOL',sick:'SL',none:'-' };
+    const statusLabel=(gccHoliday && (!r.status || r.status==='none'))?'HOL':(labels[r.status]||'-');
+    c.innerHTML=`<span>${d}</span><span class="sub">${statusLabel}</span>`;
+    if(gccHoliday)c.innerHTML+=`<span class="holiday-name">${gccHoliday.name.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span>`;
+    if(gccHoliday)c.title=gccHoliday.name+(gccHoliday.estimated?' — estimated; verify official announcement':'');
     if(r.hours>0&&r.status!=='absent'&&r.status!=='none'&&r.status!=='sick')c.innerHTML+=`<span class="otb">+${r.hours}h</span>`;
     c.onclick=()=>tapDay(k,d,r);g.appendChild(c);
     if(r.status==='present'){p++;not+=parseFloat(r.hours||0)}
@@ -675,6 +749,9 @@ function saveDay(){
 }
 render();
 loadFxRate();
+if(typeof refreshGccHolidays==='function')refreshGccHolidays(false);
+window.addEventListener('online',()=>refreshGccHolidays(true));
+setInterval(()=>refreshGccHolidays(false),12*60*60*1000);
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.log('Offline cache setup failed', err))); }
 
 function saveTargetCurrency(){
@@ -736,23 +813,6 @@ async function loadFxRate(){
 
 </script>
 
-
-<section class="app-footer" id="gccHolidayPanel">
-  <h2>🌙 GCC Holiday Calendar</h2>
-  <p>Choose a country and add a verified official holiday. Dates already marked Present, Absent, Friday, Sick Leave, or Holiday will not be overwritten automatically.</p>
-  <div class="inp" style="margin-bottom:8px"><label>Country</label>
-    <select id="holidayCountry">
-      <option value="Kuwait">Kuwait</option><option value="Saudi Arabia">Saudi Arabia</option><option value="United Arab Emirates">United Arab Emirates</option><option value="Qatar">Qatar</option><option value="Oman">Oman</option><option value="Bahrain">Bahrain</option>
-    </select>
-  </div>
-  <div class="grid3" style="grid-template-columns:1fr 1fr">
-    <div class="inp"><label>Holiday Date</label><input id="holidayDate" type="date"></div>
-    <div class="inp"><label>Holiday Name</label><input id="holidayName" type="text" placeholder="e.g. National Day"></div>
-  </div>
-  <button type="button" class="footer-action primary" style="margin-top:8px" onclick="addGccHoliday()">Add Verified Holiday</button>
-  <div id="holidayList" style="margin-top:10px;font-size:.82rem"></div>
-  <p class="note">Islamic holiday dates may change with official moon-sighting announcements. This version stores dates you enter; it does not claim automatic official-source updates.</p>
-</section>
 
 <section class="app-footer" id="vacationPanel">
   <h2>✈️ Vacation &amp; Final Settlement</h2>
