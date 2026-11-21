@@ -202,7 +202,7 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
   </div>
 
   <div class="home-profile" id="homeProfileCard">
-    <div class="profile-avatar profile-placeholder" id="homeProfilePhoto">👤</div>
+    <img class="profile-avatar" id="homeProfilePhoto" alt="Profile photo" src="">
     <div><h3 id="homeProfileName">Your Profile</h3><p id="homeProfileMeta">Add your name, Employee ID and photo</p></div>
     <button type="button" onclick="openProfileEditor()">Edit</button>
   </div>
@@ -706,6 +706,106 @@ function printDocument(title,bodyHtml){
 // Keep the new profile data synchronized with the existing employee fields without changing legacy storage keys.
 document.addEventListener("DOMContentLoaded",()=>{const p=readJsonKey(APP_PROFILE_KEY,{});const n=document.getElementById("employeeNameInp"),id=document.getElementById("employeeIdInp");if(n&&p.name)n.value=p.name;if(id&&p.employeeId)id.value=p.employeeId;});
 </script>
+
+<script>
+/* ===== App navigation / profile / team layer. Legacy salary data is not modified. ===== */
+const APP_PROFILE_KEY='gulf_profile_v1';
+const APP_TEAM_KEY='gulf_team_v1';
+let appMode='home', profilePhotoDraft='', workerPhotoDraft='', editingWorkerId=null;
+
+function readJsonKey(key,fallback){try{const v=JSON.parse(localStorage.getItem(key)||'null');return v==null?fallback:v;}catch(e){return fallback;}}
+function saveJsonKey(key,value){localStorage.setItem(key,JSON.stringify(value));}
+function safeImagePlaceholder(){return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><rect width="160" height="160" fill="#e2e8f0"/><circle cx="80" cy="62" r="30" fill="#94a3b8"/><path d="M30 145c8-35 92-35 100 0" fill="#94a3b8"/></svg>');}
+
+function loadAppProfile(){
+  const p=readJsonKey(APP_PROFILE_KEY,{});
+  const img=document.getElementById('homeProfilePhoto');
+  if(img)img.src=p.photo||safeImagePlaceholder();
+  const n=document.getElementById('homeProfileName');if(n)n.innerText=p.name||'Your Profile';
+  const m=document.getElementById('homeProfileMeta');if(m)m.innerText=[p.employeeId,p.designation].filter(Boolean).join(' • ')||'Add your name, Employee ID and photo';
+}
+function openProfileEditor(){
+  const p=readJsonKey(APP_PROFILE_KEY,{});
+  document.getElementById('profileName').value=p.name||'';
+  document.getElementById('profileEmployeeId').value=p.employeeId||'';
+  document.getElementById('profileDesignation').value=p.designation||'';
+  document.getElementById('profileCompany').value=p.company||'';
+  profilePhotoDraft=p.photo||'';
+  document.getElementById('profilePhotoPreview').src=profilePhotoDraft||safeImagePlaceholder();
+  document.getElementById('profileModal').style.display='flex';
+}
+function closeProfileEditor(){document.getElementById('profileModal').style.display='none';profilePhotoDraft='';}
+function saveProfile(){
+  const p={name:document.getElementById('profileName').value.trim(),employeeId:document.getElementById('profileEmployeeId').value.trim(),designation:document.getElementById('profileDesignation').value.trim(),company:document.getElementById('profileCompany').value.trim(),photo:profilePhotoDraft||''};
+  saveJsonKey(APP_PROFILE_KEY,p);loadAppProfile();
+  const n=document.getElementById('employeeNameInp'),id=document.getElementById('employeeIdInp');
+  if(n)n.value=p.name||'';if(id)id.value=p.employeeId||'';
+  try{if(typeof saveCfg==='function')saveCfg();}catch(e){}
+  closeProfileEditor();
+}
+function removeProfilePhoto(){profilePhotoDraft='';document.getElementById('profilePhotoPreview').src=safeImagePlaceholder();}
+function compressImage(file,done){
+  if(!file||!file.type||!file.type.startsWith('image/'))return;
+  const reader=new FileReader();
+  reader.onload=()=>{const img=new Image();img.onload=()=>{const max=360,scale=Math.min(1,max/Math.max(img.width,img.height)),w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);done(canvas.toDataURL('image/jpeg',.78));};img.src=reader.result;};
+  reader.readAsDataURL(file);
+}
+function handleProfilePhoto(e){const f=e.target.files&&e.target.files[0];compressImage(f,data=>{profilePhotoDraft=data;document.getElementById('profilePhotoPreview').src=data;});e.target.value='';}
+
+function getTeam(){return readJsonKey(APP_TEAM_KEY,[]);}
+function saveTeam(team){saveJsonKey(APP_TEAM_KEY,team);}
+function openWorkerEditor(workerId=null){
+  editingWorkerId=workerId;workerPhotoDraft='';
+  document.querySelector('#workerModal h2').innerText=workerId?'Edit Worker':'Add Worker';
+  ['workerName','workerId','workerDesignation','workerBasic','workerAllowance'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('workerCurrency').value='KWD';
+  document.getElementById('workerPhotoPreview').src=safeImagePlaceholder();
+  if(workerId){
+    const w=getTeam().find(x=>x.id===workerId);
+    if(w){document.getElementById('workerName').value=w.name||'';document.getElementById('workerId').value=w.employeeId||'';document.getElementById('workerDesignation').value=w.designation||'';document.getElementById('workerBasic').value=w.basic||0;document.getElementById('workerAllowance').value=w.allowance||0;document.getElementById('workerCurrency').value=w.currency||'KWD';workerPhotoDraft=w.photo||'';document.getElementById('workerPhotoPreview').src=workerPhotoDraft||safeImagePlaceholder();}
+  }
+  document.getElementById('workerModal').style.display='flex';
+}
+function closeWorkerEditor(){document.getElementById('workerModal').style.display='none';workerPhotoDraft='';editingWorkerId=null;}
+function removeWorkerPhoto(){workerPhotoDraft='';document.getElementById('workerPhotoPreview').src=safeImagePlaceholder();}
+function handleWorkerPhoto(e){const f=e.target.files&&e.target.files[0];compressImage(f,data=>{workerPhotoDraft=data;document.getElementById('workerPhotoPreview').src=data;});e.target.value='';}
+function saveWorker(){
+  const name=document.getElementById('workerName').value.trim(),id=document.getElementById('workerId').value.trim();
+  if(!name){alert('Please enter worker name.');return;}
+  const team=getTeam();
+  if(id&&team.some(w=>w.id!==editingWorkerId&&(w.employeeId||'').toLowerCase()===id.toLowerCase())){alert('This Employee ID is already in the team.');return;}
+  const data={name,employeeId:id,designation:document.getElementById('workerDesignation').value.trim(),basic:Number(document.getElementById('workerBasic').value||0),allowance:Number(document.getElementById('workerAllowance').value||0),currency:document.getElementById('workerCurrency').value,photo:workerPhotoDraft||'',active:true};
+  if(editingWorkerId){const idx=team.findIndex(w=>w.id===editingWorkerId);if(idx>=0)team[idx]={...team[idx],...data};}
+  else team.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),...data,createdAt:new Date().toISOString()});
+  saveTeam(team);closeWorkerEditor();renderTeam();
+}
+function renderTeam(){
+  const team=getTeam(),list=document.getElementById('teamList');if(!list)return;
+  document.getElementById('teamCount').innerText=team.length;document.getElementById('teamActive').innerText=team.filter(w=>w.active!==false).length;document.getElementById('teamMonth').innerText=new Date().toLocaleString('en-US',{month:'short',year:'numeric'});
+  if(!team.length){list.innerHTML='<div class="team-empty">No workers added yet.<br>Tap <b>＋ Add Worker</b> to create your first worker profile.</div>';return;}
+  list.innerHTML='';
+  team.forEach(w=>{const card=document.createElement('div');card.className='worker-card';const img=document.createElement('img');img.src=w.photo||safeImagePlaceholder();img.alt='';const body=document.createElement('div');body.style.flex='1';body.innerHTML='<h3></h3><p></p>';body.querySelector('h3').innerText=w.name;body.querySelector('p').innerText=[w.employeeId||'No Employee ID',w.designation||'No designation'].join(' • ');const arrow=document.createElement('div');arrow.className='worker-arrow';arrow.innerText='›';card.append(img,body,arrow);card.onclick=()=>openWorkerDetail(w.id);list.appendChild(card);});
+}
+function openWorkerDetail(workerId){
+  const w=getTeam().find(x=>x.id===workerId);if(!w)return;
+  const panel=document.getElementById('teamDetail'),listPanel=document.getElementById('teamListPanel');
+  panel.innerHTML='<div class="worker-detail-top"><img src="" alt=""><div><h2></h2><p></p></div></div><div class="worker-feature-grid"><div class="worker-feature">📅<br>Attendance</div><div class="worker-feature">💰<br>Salary</div><div class="worker-feature">⏱️<br>OT</div><div class="worker-feature">🏖️<br>Leave</div><div class="worker-feature">📝<br>Work Notes</div><div class="worker-feature">📊<br>Monthly Summary</div></div><div style="margin-top:10px;display:flex;gap:8px"><button type="button" class="footer-action" onclick="closeWorkerDetail()">← Back to Workers</button><button type="button" class="footer-action primary" onclick="openWorkerEditor(\''+w.id+'\')">✏️ Edit Worker</button></div>';
+  panel.querySelector('img').src=w.photo||safeImagePlaceholder();panel.querySelector('h2').innerText=w.name;panel.querySelector('p').innerText=[w.employeeId?'Emp ID: '+w.employeeId:'No Employee ID',w.designation||'',w.basic+' '+w.currency+' basic'].filter(Boolean).join(' • ');
+  panel.style.display='block';listPanel.style.display='none';
+}
+function closeWorkerDetail(){document.getElementById('teamDetail').style.display='none';document.getElementById('teamListPanel').style.display='block';}
+function openAppMode(mode){
+  appMode=mode;document.getElementById('appHome').style.display='none';document.getElementById('teamView').style.display='none';document.getElementById('appModeBar').style.display='block';document.body.classList.remove('app-home-mode','app-team-mode');
+  if(mode==='team'){document.body.classList.add('app-team-mode');document.getElementById('teamView').style.display='block';document.getElementById('modeBarLabel').innerText='Supervisor / Foreman';renderTeam();}
+  else{document.getElementById('modeBarLabel').innerText='Individual — My Salary';loadAppProfile();try{if(typeof render==='function')render();}catch(e){}}
+  window.scrollTo(0,0);
+}
+function showAppHome(){
+  appMode='home';document.body.classList.add('app-home-mode');document.body.classList.remove('app-team-mode');document.getElementById('appModeBar').style.display='none';document.getElementById('appHome').style.display='block';document.getElementById('teamView').style.display='none';document.querySelector('body>header').style.display='none';document.querySelector('body>.wrap').style.display='none';loadAppProfile();window.scrollTo(0,0);
+}
+document.addEventListener('DOMContentLoaded',()=>{loadAppProfile();showAppHome();});
+</script>
+
 </body></html>`);
   win.document.close();
 }
