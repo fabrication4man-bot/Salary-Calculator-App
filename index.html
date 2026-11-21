@@ -1308,11 +1308,22 @@ function openIndividualDashboard(push=true){
   window.scrollTo(0,0);
 }
 function openMonthFromDashboard(){const months=getAvailableMonths();if(months.length)openMonthDetail(months[0].y,months[0].m);}
-function openMonthDetail(y,m,push=true){
-  const label=new Date(y,m,1).toLocaleString('en-US',{month:'long',year:'numeric'});document.getElementById('monthDetailTitle').innerText=label;document.getElementById('individualDashboard').style.display='none';document.getElementById('notesDashboard').style.display='none';document.getElementById('monthDetail').style.display='block';document.getElementById('monthLegacyHost').innerHTML='';
-  const host=document.getElementById('monthLegacyHost'),wrap=document.querySelector('body>.wrap');if(wrap){const clone=wrap.cloneNode(true);clone.querySelectorAll('script').forEach(s=>s.remove());host.appendChild(clone);}
+function openMonthDetail(year,month,push=true){
+  // Use the real legacy salary/attendance interface so all existing handlers and data remain connected.
+  y=year;m=month;
+  const label=new Date(year,month,1).toLocaleString('en-US',{month:'long',year:'numeric'});
+  document.getElementById('monthDetailTitle').innerText=label;
+  document.getElementById('individualDashboard').style.display='none';
+  document.getElementById('notesDashboard').style.display='none';
+  document.getElementById('monthDetail').style.display='block';
+  const wrap=document.querySelector('body>.wrap');
+  if(wrap)wrap.style.setProperty('display','block','important');
+  const header=document.querySelector('body>header');
+  if(header)header.style.setProperty('display','block','important');
   try{if(typeof render==='function')render();}catch(e){}
-  if(push)history.pushState({gulfMode:'month',y,m},'',location.href.split('#')[0]+'#month-'+y+'-'+(m+1));window.scrollTo(0,0);
+  const cal=document.getElementById('calGrid');
+  if(cal)cal.scrollIntoView({behavior:'smooth',block:'start'});
+  if(push)history.pushState({gulfMode:'month',y:year,m:month},'',location.href.split('#')[0]+'#month-'+year+'-'+(month+1));
 }
 function closeMonthDetail(){openIndividualDashboard(false);history.replaceState({gulfMode:'individual'},'',location.href.split('#')[0]+'#individual');}
 function openAllWorkNotes(push=true){
