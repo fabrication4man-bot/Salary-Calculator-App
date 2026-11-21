@@ -243,11 +243,6 @@ body.month-detail-mode #dataSafetyPanel{display:none!important}
     </div>
   </div>
 
-  <button type="button" class="backup-menu-card" onclick="openBackupCenter()">
-    <div class="backup-menu-icon">💾</div>
-    <div><h3>Data Backup &amp; Restore</h3><p>Download a backup, restore your data, or save a backup now.</p></div>
-    <span>›</span>
-  </button>
 </section>
 
 
@@ -276,8 +271,8 @@ body.month-detail-mode #dataSafetyPanel{display:none!important}
     <button type="button" class="dash-card" onclick="openLeaveDashboard()">
       <div class="dash-icon">🏖️</div><div><h3>Leave & Final Settlement</h3><p>Leave balance, dates and settlement</p></div><span>›</span>
     </button>
-    <button type="button" class="dash-card" onclick="openBackupCenter()">
-      <div class="dash-icon">💾</div><div><h3>Data Backup &amp; Restore</h3><p>Download, restore and save your app data safely</p></div><span>›</span>
+    <button type="button" class="dash-card" onclick="openScopedBackup('individual')">
+      <div class="dash-icon">💾</div><div><h3>Individual Data Backup</h3><p>Backup &amp; restore only your individual salary data</p></div><span>›</span>
     </button>
   </div>
 
@@ -316,6 +311,7 @@ body.month-detail-mode #dataSafetyPanel{display:none!important}
   <div id="teamListPanel">
     <div class="team-actions">
       <button type="button" class="primary" onclick="openWorkerEditor()">＋ Add Worker</button>
+      <button type="button" onclick="openScopedBackup('team')">💾 Team Data Backup</button>
       <button type="button" onclick="showAppHome()">⌂ Main Menu</button>
     </div>
     <div id="teamList" class="team-list"></div>
@@ -324,14 +320,14 @@ body.month-detail-mode #dataSafetyPanel{display:none!important}
 
 <div class="profile-modal-bg" id="backupCenterModal" onclick="if(event.target===this)closeBackupCenter()">
   <div class="profile-modal" style="max-width:430px">
-    <h2 style="margin:0 0 6px;color:#0b1f42;font-size:1.05rem">💾 Data Backup &amp; Restore</h2>
-    <p style="margin:0;color:#475569;font-size:.8rem;line-height:1.45">Your current app data is saved locally. Before restoring a file, the app will first save the current data as an automatic backup.</p>
+    <h2 id="backupCenterTitle" style="margin:0 0 6px;color:#0b1f42;font-size:1.05rem">💾 Data Backup &amp; Restore</h2>
+    <p id="backupCenterDesc" style="margin:0;color:#475569;font-size:.8rem;line-height:1.45"></p>
     <div class="backup-modal-actions">
-      <button type="button" style="background:#166534;color:#fff" onclick="gulfExportBackup()">⬇ Download Backup</button>
+      <button type="button" style="background:#166534;color:#fff" onclick="gulfExportScopedBackup()">⬇ Download Backup</button>
       <button type="button" style="background:#1d4ed8;color:#fff" onclick="document.getElementById('gulfBackupFile').click()">↩ Restore Backup</button>
-      <button type="button" style="background:#475569;color:#fff;grid-column:1/-1" onclick="gulfSaveSnapshot(true)">💾 Save Backup Now</button>
+      <button type="button" style="background:#475569;color:#fff;grid-column:1/-1" onclick="gulfSaveScopedBackup(true)">💾 Save Backup Now</button>
     </div>
-    <p id="backupCenterStatus" class="backup-modal-status">Automatic backup is active on this device.</p>
+    <p id="backupCenterStatus" class="backup-modal-status">Choose a backup action.</p>
     <button type="button" style="margin-top:12px;width:100%" onclick="closeBackupCenter()">Close</button>
   </div>
 </div>
@@ -1274,7 +1270,7 @@ async function loadFxRate(){
     <button type="button" onclick="document.getElementById('gulfBackupFile').click()" style="flex:1;min-width:130px;padding:11px;border:0;border-radius:9px;background:#1d4ed8;color:#fff;font-weight:800">Restore Backup</button>
     <button type="button" onclick="gulfSaveSnapshot(true)" style="flex:1;min-width:130px;padding:11px;border:0;border-radius:9px;background:#475569;color:#fff;font-weight:800">Save Backup Now</button>
   </div>
-  <input id="gulfBackupFile" type="file" accept=".json,application/json" style="display:none" onchange="gulfImportBackup(event)">
+  <input id="gulfBackupFile" type="file" accept=".json,application/json" style="display:none" onchange="gulfImportScopedBackup(event)">
   <p id="gulfBackupStatus" role="status" style="margin:10px 0 0;font-size:.78rem;color:#475569">Starting automatic local backups…</p>
 </section>
 <script>
@@ -1391,6 +1387,70 @@ function openBackupCenter(){
 function closeBackupCenter(){
   const m=document.getElementById('backupCenterModal');if(m)m.style.display='none';
 }
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){if(window.gulfSaveScopedBackup){window.gulfBackupScope='individual';window.gulfSaveScopedBackup(false);window.gulfBackupScope='team';window.gulfSaveScopedBackup(false);}}});
+window.addEventListener('pagehide',()=>{if(window.gulfSaveScopedBackup){window.gulfBackupScope='individual';window.gulfSaveScopedBackup(false);window.gulfBackupScope='team';window.gulfSaveScopedBackup(false);}});
+
+function openScopedBackup(scope){
+  window.gulfBackupScope=scope==='team'?'team':'individual';
+  const title=document.getElementById('backupCenterTitle'),desc=document.getElementById('backupCenterDesc'),status=document.getElementById('backupCenterStatus');
+  if(title)title.textContent=window.gulfBackupScope==='team'?'💾 Supervisor / Team Data Backup':'💾 Individual Data Backup';
+  if(desc)desc.textContent=window.gulfBackupScope==='team'
+    ?'Only Supervisor / Foreman worker records will be included. Individual salary, attendance and profile data will not be included.'
+    :'Only Individual salary, attendance, leave, work notes and profile data will be included. Supervisor / Foreman worker records will not be included.';
+  if(status)status.textContent='Backup is kept separate from the other app mode.';
+  const m=document.getElementById('backupCenterModal');if(m)m.style.display='flex';
+}
+function scopedBackupItems(scope){
+  const items={};
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(!k||k==='gulf_auto_backup_v1'||k==='gulf_individual_auto_backup_v1'||k==='gulf_team_auto_backup_v1')continue;
+    const include=scope==='team' ? k==='gulf_team_v1' : k.startsWith('gulf_')&&k!=='gulf_team_v1';
+    if(include)items[k]=localStorage.getItem(k);
+  }
+  return items;
+}
+window.gulfExportScopedBackup=function(){
+  const scope=window.gulfBackupScope||'individual';
+  try{
+    const data={format:'gulf-duty-salary-scoped-backup',version:1,scope,createdAt:new Date().toISOString(),items:scopedBackupItems(scope)};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=(scope==='team'?'Gulf-Supervisor-Team-Backup-':'Gulf-Individual-Backup-')+new Date().toISOString().slice(0,10)+'.json';
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+    const s=document.getElementById('backupCenterStatus');if(s)s.textContent='Separate '+scope+' backup file created. Keep a copy outside the app.';
+  }catch(e){alert('Backup download failed. Please try again.');}
+};
+window.gulfSaveScopedBackup=function(showMessage){
+  const scope=window.gulfBackupScope||'individual';
+  try{
+    const data={format:'gulf-duty-salary-scoped-backup',version:1,scope,createdAt:new Date().toISOString(),items:scopedBackupItems(scope)};
+    localStorage.setItem(scope==='team'?'gulf_team_auto_backup_v1':'gulf_individual_auto_backup_v1',JSON.stringify(data));
+    if(showMessage){const s=document.getElementById('backupCenterStatus');if(s)s.textContent='Separate '+scope+' backup saved on this device.';}
+    return true;
+  }catch(e){return false;}
+};
+window.gulfImportScopedBackup=function(event){
+  const file=event.target.files&&event.target.files[0];if(!file)return;
+  const scope=window.gulfBackupScope||'individual',reader=new FileReader();
+  reader.onload=async function(){
+    try{
+      const data=JSON.parse(String(reader.result||''));
+      if(data.format!=='gulf-duty-salary-scoped-backup'||data.scope!==scope||!data.items||typeof data.items!=='object')throw new Error('Wrong backup type');
+      if(!confirm('Restore this '+(scope==='team'?'Supervisor / Team':'Individual')+' backup? The other mode data will not be changed.')){event.target.value='';return;}
+      window.gulfSaveScopedBackup(false);
+      for(const k of Object.keys(data.items)){
+        if(scope==='team' && k==='gulf_team_v1' && typeof data.items[k]==='string')localStorage.setItem(k,data.items[k]);
+        if(scope==='individual' && k.startsWith('gulf_') && k!=='gulf_team_v1' && typeof data.items[k]==='string')localStorage.setItem(k,data.items[k]);
+      }
+      window.gulfSaveScopedBackup(false);
+      alert((scope==='team'?'Supervisor / Team':'Individual')+' backup restored. The app will reload now.');location.reload();
+    }catch(e){alert('Could not restore this backup. Make sure you selected the correct '+(scope==='team'?'Supervisor / Team':'Individual')+' backup file.');}
+    event.target.value='';
+  };
+  reader.readAsText(file);
+};
+
 function openProfileEditor(){const p=readJsonKey(APP_PROFILE_KEY,{});document.getElementById('profileName').value=p.name||'';document.getElementById('profileEmployeeId').value=p.employeeId||'';document.getElementById('profileDesignation').value=p.designation||'';document.getElementById('profileCompany').value=p.company||'';profilePhotoDraft=p.photo||'';document.getElementById('profilePhotoPreview').src=profilePhotoDraft||safeImagePlaceholder();document.getElementById('profileModal').style.display='flex';}
 function closeProfileEditor(){document.getElementById('profileModal').style.display='none';profilePhotoDraft='';}
 function saveProfile(){const p={name:document.getElementById('profileName').value.trim(),employeeId:document.getElementById('profileEmployeeId').value.trim(),designation:document.getElementById('profileDesignation').value.trim(),company:document.getElementById('profileCompany').value.trim(),photo:profilePhotoDraft||''};saveJsonKey(APP_PROFILE_KEY,p);loadAppProfile();const n=document.getElementById('employeeNameInp'),id=document.getElementById('employeeIdInp');if(n)n.value=p.name||'';if(id)id.value=p.employeeId||'';try{if(typeof saveCfg==='function')saveCfg();}catch(e){}closeProfileEditor();}
