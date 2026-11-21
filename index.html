@@ -208,6 +208,9 @@ body.month-detail-mode #dataSafetyPanel{display:none!important}
 .currency-rate-value{font-size:1rem;font-weight:900;color:#1d4ed8}
 .currency-rate-updated{font-size:.68rem;color:#64748b;line-height:1.35;margin-top:5px}
 .basic-detail-modal-note{font-size:.7rem;color:#64748b;line-height:1.4;margin-top:8px}
+.backup-menu-card{width:100%;display:flex;align-items:center;gap:14px;text-align:left;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:16px;background:#fff;box-shadow:0 2px 8px rgba(15,23,42,.06);color:#0b1f42}
+.backup-menu-card h3{margin:0 0 4px;font-size:1rem}.backup-menu-card p{margin:0;color:#64748b;font-size:.78rem;line-height:1.35}.backup-menu-card>span{margin-left:auto;font-size:1.6rem;color:#64748b}.backup-menu-icon{width:48px;height:48px;border-radius:14px;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex:none}
+.backup-modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.backup-modal-actions button{padding:11px;border:0;border-radius:10px;font-weight:800}.backup-modal-status{margin:10px 0 0;font-size:.76rem;color:#475569;line-height:1.4}
 </style>
 </head>
 <body class="app-home-mode">
@@ -239,6 +242,12 @@ body.month-detail-mode #dataSafetyPanel{display:none!important}
       <button type="button" onclick="openSharePanel()">▣ Scan / QR Code</button>
     </div>
   </div>
+
+  <button type="button" class="backup-menu-card" onclick="openBackupCenter()">
+    <div class="backup-menu-icon">💾</div>
+    <div><h3>Data Backup &amp; Restore</h3><p>Download a backup, restore your data, or save a backup now.</p></div>
+    <span>›</span>
+  </button>
 </section>
 
 
@@ -266,6 +275,9 @@ body.month-detail-mode #dataSafetyPanel{display:none!important}
     </button>
     <button type="button" class="dash-card" onclick="openLeaveDashboard()">
       <div class="dash-icon">🏖️</div><div><h3>Leave & Final Settlement</h3><p>Leave balance, dates and settlement</p></div><span>›</span>
+    </button>
+    <button type="button" class="dash-card" onclick="openBackupCenter()">
+      <div class="dash-icon">💾</div><div><h3>Data Backup &amp; Restore</h3><p>Download, restore and save your app data safely</p></div><span>›</span>
     </button>
   </div>
 
@@ -309,6 +321,20 @@ body.month-detail-mode #dataSafetyPanel{display:none!important}
     <div id="teamList" class="team-list"></div>
   </div>
 </section>
+
+<div class="profile-modal-bg" id="backupCenterModal" onclick="if(event.target===this)closeBackupCenter()">
+  <div class="profile-modal" style="max-width:430px">
+    <h2 style="margin:0 0 6px;color:#0b1f42;font-size:1.05rem">💾 Data Backup &amp; Restore</h2>
+    <p style="margin:0;color:#475569;font-size:.8rem;line-height:1.45">Your current app data is saved locally. Before restoring a file, the app will first save the current data as an automatic backup.</p>
+    <div class="backup-modal-actions">
+      <button type="button" style="background:#166534;color:#fff" onclick="gulfExportBackup()">⬇ Download Backup</button>
+      <button type="button" style="background:#1d4ed8;color:#fff" onclick="document.getElementById('gulfBackupFile').click()">↩ Restore Backup</button>
+      <button type="button" style="background:#475569;color:#fff;grid-column:1/-1" onclick="gulfSaveSnapshot(true)">💾 Save Backup Now</button>
+    </div>
+    <p id="backupCenterStatus" class="backup-modal-status">Automatic backup is active on this device.</p>
+    <button type="button" style="margin-top:12px;width:100%" onclick="closeBackupCenter()">Close</button>
+  </div>
+</div>
 
 <div class="profile-modal-bg" id="basicDetailsModal" onclick="if(event.target===this)closeBasicDetails()">
   <div class="profile-modal">
@@ -783,7 +809,7 @@ function printDocument(title,bodyHtml){
   if(!win){alert('Print window open nahi hui. Browser settings mein pop-ups allow karke dobara try karein.');return;}
   win.document.open();
   const qrDataUrl = getPrintQrDataUrl();
-  const qrHtml = `<section class="qr-final"><h2>Gulf Duty &amp; Salary Pro — App Links</h2>${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR code for app website" width="150" height="150">` : `<p>QR code could not be generated offline. Use the links below.</p>`}<p><b>Website:</b> <a href="${APP_BROWSER_URL}">${APP_BROWSER_URL}</a></p><p><b>Android APK:</b> <a href="${APP_APK_URL}">Download Gulf Salary APK</a><br><span>${APP_APK_URL}</span></p><p>Scan the QR code to open the website; use the APK link to download the Android app.</p></section>`;
+  const qrHtml = `<section class="qr-final"><div class="ad-tag-print">ADVERTISEMENT</div><h2>📲 Gulf Duty &amp; Salary Pro — Download the App</h2><p><b>Scan this QR code to download the Android app</b></p>${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR code to download Gulf Salary Android app" width="170" height="170">` : `<p>QR code could not be generated offline. Use the APK link below.</p>`}<p><a class="download-btn" href="${APP_APK_URL}">⬇ Download Android APK</a></p><p><b>Web App:</b> <a href="${APP_BROWSER_URL}">${APP_BROWSER_URL}</a></p><p class="ad-copy">Gulf Duty &amp; Salary Pro — Work • Attendance • OT • Salary</p></section>`;
   win.document.write(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escPrint(title)}</title>
   <style>
   *{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#111827;margin:24px;font-size:12px}
@@ -794,8 +820,9 @@ function printDocument(title,bodyHtml){
   .money td:last-child{text-align:right;font-variant-numeric:tabular-nums}.total{font-size:16px;font-weight:bold;background:#ecfdf5}
   .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.label{color:#4b5563;font-size:10px}.value{font-size:14px;font-weight:bold;margin-top:4px}
   .foot{margin-top:22px;color:#6b7280;font-size:10px}
-  .qr-final{break-before:page;page-break-before:always;text-align:center;margin:0 auto;padding:16px;max-width:620px;font-size:12px}
-  .qr-final h2{font-size:18px;font-weight:900}.qr-final img{display:block;margin:12px auto}.qr-final p{overflow-wrap:anywhere;line-height:1.5}.qr-final a{color:#111827;text-decoration:underline}
+  .qr-final{text-align:center;margin:24px auto 0;padding:18px 12px;max-width:620px;font-size:12px;border:2px solid #d9a92e;border-radius:12px;background:#fffdf5;break-inside:avoid;page-break-inside:avoid}
+  .ad-tag-print{display:inline-block;background:#f59e0b;color:#fff;font-weight:900;padding:4px 9px;border-radius:5px;font-size:10px;letter-spacing:.5px}
+  .qr-final h2{font-size:18px;font-weight:900;margin:8px 0}.qr-final img{display:block;margin:12px auto}.qr-final p{overflow-wrap:anywhere;line-height:1.5}.qr-final a{color:#111827;text-decoration:underline}.qr-final .download-btn{display:inline-block;background:#0b1f42;color:#fff;padding:9px 14px;border-radius:7px;text-decoration:none;font-weight:900}.qr-final .ad-copy{font-weight:800;color:#0b1f42;margin-bottom:0}
   .actions{margin-bottom:16px}.actions button{padding:9px 14px;margin-right:8px}
   @media print{body{margin:10mm}.actions{display:none}thead{display:table-header-group}tr{break-inside:avoid}}
   </style></head><body><div class="actions"><button onclick="window.print()">Print / Save PDF</button><button onclick="window.close()">Close</button></div>${bodyHtml}
@@ -812,7 +839,7 @@ function getPrintQrDataUrl(){
   try{
     if(!window.QRCode)return '';
     const box=document.createElement('div');
-    new QRCode(box,{text:APP_BROWSER_URL,width:220,height:220,colorDark:'#0f172a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+    new QRCode(box,{text:APP_APK_URL,width:220,height:220,colorDark:'#0f172a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
     const canvas=box.querySelector('canvas');
     if(canvas)return canvas.toDataURL('image/png');
     const img=box.querySelector('img');
@@ -1289,7 +1316,8 @@ async function loadFxRate(){
       try{
         const data=JSON.parse(String(reader.result||''));
         if(data.format!=='gulf-duty-salary-backup'||!data.items||typeof data.items!=='object')throw new Error('Invalid backup');
-        if(!confirm('Restore this backup? Current Gulf app data may be overwritten.')){event.target.value='';return;}
+        if(!confirm('Restore this backup? The app will first save your CURRENT data as an automatic backup, then restore the selected file.')){event.target.value='';return;}
+        await window.gulfSaveSnapshot(false);
         for(const k of Object.keys(data.items))if((k.startsWith('gulf_')||k.startsWith('gulf-'))&&typeof data.items[k]==='string')localStorage.setItem(k,data.items[k]);
         await window.gulfSaveSnapshot(false);
         alert('Backup restored. The app will reload now.');location.reload();
@@ -1338,6 +1366,12 @@ function readJsonKey(key,fallback){try{const v=JSON.parse(localStorage.getItem(k
 function saveJsonKey(key,value){localStorage.setItem(key,JSON.stringify(value));}
 function safeImagePlaceholder(){return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><rect width="160" height="160" fill="#e2e8f0"/><circle cx="80" cy="62" r="30" fill="#94a3b8"/><path d="M30 145c8-35 92-35 100 0" fill="#94a3b8"/></svg>');}
 function loadAppProfile(){const p=readJsonKey(APP_PROFILE_KEY,{});const img=document.getElementById('homeProfilePhoto');if(img)img.src=p.photo||safeImagePlaceholder();const n=document.getElementById('homeProfileName');if(n)n.innerText=p.name||'Your Profile';const m=document.getElementById('homeProfileMeta');if(m)m.innerText=[p.employeeId,p.designation].filter(Boolean).join(' • ')||'Add your name, Employee ID and photo';}
+function openBackupCenter(){
+  const m=document.getElementById('backupCenterModal');if(m)m.style.display='flex';
+}
+function closeBackupCenter(){
+  const m=document.getElementById('backupCenterModal');if(m)m.style.display='none';
+}
 function openProfileEditor(){const p=readJsonKey(APP_PROFILE_KEY,{});document.getElementById('profileName').value=p.name||'';document.getElementById('profileEmployeeId').value=p.employeeId||'';document.getElementById('profileDesignation').value=p.designation||'';document.getElementById('profileCompany').value=p.company||'';profilePhotoDraft=p.photo||'';document.getElementById('profilePhotoPreview').src=profilePhotoDraft||safeImagePlaceholder();document.getElementById('profileModal').style.display='flex';}
 function closeProfileEditor(){document.getElementById('profileModal').style.display='none';profilePhotoDraft='';}
 function saveProfile(){const p={name:document.getElementById('profileName').value.trim(),employeeId:document.getElementById('profileEmployeeId').value.trim(),designation:document.getElementById('profileDesignation').value.trim(),company:document.getElementById('profileCompany').value.trim(),photo:profilePhotoDraft||''};saveJsonKey(APP_PROFILE_KEY,p);loadAppProfile();const n=document.getElementById('employeeNameInp'),id=document.getElementById('employeeIdInp');if(n)n.value=p.name||'';if(id)id.value=p.employeeId||'';try{if(typeof saveCfg==='function')saveCfg();}catch(e){}closeProfileEditor();}
