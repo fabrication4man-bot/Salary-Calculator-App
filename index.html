@@ -231,12 +231,6 @@ body.month-detail-mode #dataSafetyPanel{display:none!important}
     </button>
   </div>
 
-  <div class="home-profile" id="homeProfileCard">
-    <img class="profile-avatar" id="homeProfilePhoto" alt="Profile photo" src="">
-    <div><h3 id="homeProfileName">Your Profile</h3><p id="homeProfileMeta">Add your name, Employee ID and photo</p></div>
-    <button type="button" onclick="openProfileEditor()">Edit</button>
-  </div>
-
   <div class="home-ad">
     <div class="home-ad-head"><span class="ad-tag">ADVERTISEMENT</span><h3>Share Gulf Salary Calculator</h3></div>
     <p>Share the app with another worker or scan the QR code to open the app and download the Android version.</p>
@@ -320,14 +314,24 @@ body.month-detail-mode #dataSafetyPanel{display:none!important}
 <div class="profile-modal-bg" id="basicDetailsModal" onclick="if(event.target===this)closeBasicDetails()">
   <div class="profile-modal">
     <h2 style="margin:0 0 10px;color:#0b1f42;font-size:1rem">👤 Basic Details</h2>
+    <div class="profile-photo-wrap">
+      <img id="basicProfilePhotoPreview" class="profile-photo-lg" alt="Profile photo" src="">
+      <div class="photo-buttons">
+        <button type="button" onclick="document.getElementById('basicProfilePhotoInput').click()">📷 Add / Change Photo</button>
+        <button type="button" onclick="removeBasicProfilePhoto()">🗑 Remove</button>
+      </div>
+      <input id="basicProfilePhotoInput" type="file" accept="image/*" style="display:none" onchange="handleBasicProfilePhoto(event)">
+    </div>
     <div class="profile-fields">
       <div><label>Employee Name (optional)</label><input id="basicDashName" type="text" maxlength="80" placeholder="Employee name"></div>
       <div><label>Employee ID (optional)</label><input id="basicDashId" type="text" maxlength="60" placeholder="Employee ID"></div>
+      <div><label>Designation</label><input id="basicDashDesignation" type="text" maxlength="80" placeholder="Designation"></div>
+      <div><label>Company (optional)</label><input id="basicDashCompany" type="text" maxlength="100" placeholder="Company / Contractor"></div>
       <div><label>Country / Salary Currency</label><select id="basicDashCurrency"><option value="KWD">Kuwait (KWD)</option><option value="SAR">Saudi (SAR)</option><option value="AED">UAE (AED)</option><option value="QAR">Qatar (QAR)</option><option value="OMR">Oman (OMR)</option><option value="BHD">Bahrain (BHD)</option></select></div>
       <div><label>Basic Salary</label><input id="basicDashBasic" type="number" min="0" step="0.001"></div>
       <div><label>Allowance</label><input id="basicDashAllow" type="number" min="0" step="0.001"></div>
     </div>
-    <div class="basic-detail-modal-note">These details are entered once and apply to the salary/attendance calculations. They will not be repeated inside each month's calendar.</div>
+    <div class="basic-detail-modal-note">Your profile and salary details are managed together here. These details are entered once and will not be repeated inside each month's calendar.</div>
     <div class="profile-actions"><button type="button" class="cancel" onclick="closeBasicDetails()">Cancel</button><button type="button" class="save" onclick="saveBasicDetails()">Save Details</button></div>
   </div>
 </div>
@@ -1425,22 +1429,34 @@ function renderAllWorkNotes(){
     groups[g].sort((a,b)=>Number(b.split('-')[2])-Number(a.split('-')[2])).forEach(k=>notes[k].forEach(n=>{const d=document.createElement('div');d.className='note-all-item';d.innerHTML='<div class="note-all-date"></div><div class="note-all-text"></div>';d.querySelector('.note-all-date').innerText=k.split('-')[2]+'/'+m+'/'+y+' • '+(noteStatusLabel(n.status)||'Normal');d.querySelector('.note-all-text').innerText=n.text;sec.appendChild(d);}));box.appendChild(sec);
   });
 }
+let basicProfilePhotoDraft='';
 function openBasicDetails(){
   const p=readJsonKey(APP_PROFILE_KEY,{});
   document.getElementById('basicDashName').value=localStorage.getItem('gulf_employee_name_v1')||p.name||'';
   document.getElementById('basicDashId').value=localStorage.getItem('gulf_employee_id_v1')||p.employeeId||'';
+  document.getElementById('basicDashDesignation').value=p.designation||'';
+  document.getElementById('basicDashCompany').value=p.company||'';
   document.getElementById('basicDashCurrency').value=cfg.currency||'KWD';
   document.getElementById('basicDashBasic').value=cfg.basic||0;
   document.getElementById('basicDashAllow').value=cfg.allow||0;
+  basicProfilePhotoDraft=p.photo||'';
+  document.getElementById('basicProfilePhotoPreview').src=basicProfilePhotoDraft||safeImagePlaceholder();
   document.getElementById('basicDetailsModal').style.display='flex';
 }
-function closeBasicDetails(){document.getElementById('basicDetailsModal').style.display='none';}
+function closeBasicDetails(){document.getElementById('basicDetailsModal').style.display='none';basicProfilePhotoDraft='';}
+function handleBasicProfilePhoto(e){const f=e.target.files&&e.target.files[0];compressImage(f,data=>{basicProfilePhotoDraft=data;document.getElementById('basicProfilePhotoPreview').src=data;});e.target.value='';}
+function removeBasicProfilePhoto(){basicProfilePhotoDraft='';document.getElementById('basicProfilePhotoPreview').src=safeImagePlaceholder();}
 function saveBasicDetails(){
   const name=document.getElementById('basicDashName').value.trim();
   const id=document.getElementById('basicDashId').value.trim();
+  const designation=document.getElementById('basicDashDesignation').value.trim();
+  const company=document.getElementById('basicDashCompany').value.trim();
   const currency=document.getElementById('basicDashCurrency').value||'KWD';
   const basic=Math.max(0,Number(document.getElementById('basicDashBasic').value)||0);
   const allow=Number(document.getElementById('basicDashAllow').value)||0;
+  const oldProfile=readJsonKey(APP_PROFILE_KEY,{});
+  const profile={...oldProfile,name,employeeId:id,designation,company,photo:basicProfilePhotoDraft||''};
+  saveJsonKey(APP_PROFILE_KEY,profile);
   localStorage.setItem('gulf_employee_name_v1',name);
   localStorage.setItem('gulf_employee_id_v1',id);
   document.getElementById('employeeNameInp').value=name;
@@ -1450,6 +1466,7 @@ function saveBasicDetails(){
   document.getElementById('allowInp').value=allow;
   saveCfg();
   closeBasicDetails();
+  loadAppProfile();
   loadDashboardProfile();
   alert('Basic Details saved.');
 }
