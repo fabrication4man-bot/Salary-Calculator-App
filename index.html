@@ -186,6 +186,26 @@ body.app-home-mode>.app-footer,body.app-home-mode>#dataSafetyPanel,body.app-team
 .dash-grid{display:grid;gap:10px}.dash-card{width:100%;display:grid;grid-template-columns:52px 1fr 20px;align-items:center;text-align:left;gap:10px;padding:13px;border:1px solid #e2e8f0;border-radius:15px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.05)}.dash-card h3{margin:0;color:#0b1f42;font-size:.92rem}.dash-card p{margin:4px 0 0;color:#64748b;font-size:.72rem}.dash-card>span{font-size:1.3rem;color:#64748b}.dash-icon{width:44px;height:44px;border-radius:13px;background:#eef4ff;display:grid;place-items:center;font-size:1.35rem}
 .month-section{margin-top:16px;background:#fff;border:1px solid #e2e8f0;border-radius:15px;padding:13px}.section-row{display:flex;justify-content:space-between;align-items:center}.section-row h2{margin:0;font-size:1rem;color:#0b1f42}.section-row span{font-size:.72rem;color:#64748b}.month-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}.month-card{border:1px solid #dbe4f0;border-radius:14px;padding:12px;background:#f8fafc;text-align:left;min-height:105px}.month-card .mi{font-size:1.35rem}.month-card h3{margin:5px 0 2px;color:#0b1f42;font-size:.88rem}.month-card p{margin:0;color:#64748b;font-size:.68rem;line-height:1.4}.month-card b{color:#0b1f42}.dash-footer-actions{margin-top:12px}.dash-footer-actions button,.detail-head button{border:1px solid #cbd5e1;background:#fff;border-radius:10px;padding:9px 12px;font-weight:800;color:#0b1f42}.detail-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}.detail-head h1{margin:0;color:#0b1f42;font-size:1.1rem}.detail-head p{margin:3px 0 0;color:#64748b;font-size:.72rem}.notes-dashboard{background:#f8fafc}.note-all-month{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:11px;margin-bottom:10px}.note-all-month h3{margin:0 0 8px;color:#0b1f42;font-size:.9rem}.note-all-item{padding:8px 0;border-top:1px solid #edf2f7;font-size:.78rem}.note-all-item:first-of-type{border-top:0}.note-all-date{font-weight:900;color:#334155;font-size:.68rem}.note-all-text{margin-top:3px;color:#475569}.note-all-status{font-size:.65rem;font-weight:800;margin-left:6px}
 @media(max-width:430px){.month-cards{grid-template-columns:1fr 1fr}.individual-dashboard,.month-detail,.notes-dashboard{padding-left:10px;padding-right:10px}}
+/* Screen separation: global details belong to the Individual Dashboard; month view stays month-only. */
+body.month-detail-mode>header,
+body.month-detail-mode>.wrap>.hdr,
+body.month-detail-mode #employeeDetailsCard,
+body.month-detail-mode #salaryConfigCard,
+body.month-detail-mode #vacationPanel,
+body.month-detail-mode #dataSafetyPanel{display:none!important}
+body.leave-mode>header,
+body.leave-mode>.wrap{display:none!important}
+body.leave-mode #vacationPanel{display:block!important;max-width:760px;margin:12px auto 30px}
+body.leave-mode #dataSafetyPanel{display:none!important}
+body.leave-mode .app-modebar{display:block!important}
+body.month-detail-mode .app-footer{display:block!important}
+body.month-detail-mode #vacationPanel,
+body.month-detail-mode #dataSafetyPanel{display:none!important}
+.currency-rate-card{margin-top:10px;background:#eff6ff;border:1px solid #93c5fd;border-radius:12px;padding:10px}
+.currency-rate-head{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.currency-rate-value{font-size:1rem;font-weight:900;color:#1d4ed8}
+.currency-rate-updated{font-size:.68rem;color:#64748b;line-height:1.35;margin-top:5px}
+.basic-detail-modal-note{font-size:.7rem;color:#64748b;line-height:1.4;margin-top:8px}
 </style>
 </head>
 <body class="app-home-mode">
@@ -239,6 +259,9 @@ body.app-home-mode>.app-footer,body.app-home-mode>#dataSafetyPanel,body.app-team
   </div>
 
   <div class="dash-grid">
+    <button type="button" class="dash-card" onclick="openBasicDetails()">
+      <div class="dash-icon">👤</div><div><h3>Basic Details</h3><p>Name, Employee ID, Country, Basic Salary & Allowance</p></div><span>›</span>
+    </button>
     <button type="button" class="dash-card" onclick="openMonthFromDashboard()">
       <div class="dash-icon">📅</div><div><h3>Monthly Salary & Attendance</h3><p id="dashMonthHint">Open current month</p></div><span>›</span>
     </button>
@@ -292,6 +315,20 @@ body.app-home-mode>.app-footer,body.app-home-mode>#dataSafetyPanel,body.app-team
   </div>
 </section>
 
+<div class="profile-modal-bg" id="basicDetailsModal" onclick="if(event.target===this)closeBasicDetails()">
+  <div class="profile-modal">
+    <h2 style="margin:0 0 10px;color:#0b1f42;font-size:1rem">👤 Basic Details</h2>
+    <div class="profile-fields">
+      <div><label>Employee Name (optional)</label><input id="basicDashName" type="text" maxlength="80" placeholder="Employee name"></div>
+      <div><label>Employee ID (optional)</label><input id="basicDashId" type="text" maxlength="60" placeholder="Employee ID"></div>
+      <div><label>Country / Salary Currency</label><select id="basicDashCurrency"><option value="KWD">Kuwait (KWD)</option><option value="SAR">Saudi (SAR)</option><option value="AED">UAE (AED)</option><option value="QAR">Qatar (QAR)</option><option value="OMR">Oman (OMR)</option><option value="BHD">Bahrain (BHD)</option></select></div>
+      <div><label>Basic Salary</label><input id="basicDashBasic" type="number" min="0" step="0.001"></div>
+      <div><label>Allowance</label><input id="basicDashAllow" type="number" min="0" step="0.001"></div>
+    </div>
+    <div class="basic-detail-modal-note">These details are entered once and apply to the salary/attendance calculations. They will not be repeated inside each month's calendar.</div>
+    <div class="profile-actions"><button type="button" class="cancel" onclick="closeBasicDetails()">Cancel</button><button type="button" class="save" onclick="saveBasicDetails()">Save Details</button></div>
+  </div>
+</div>
 <div class="profile-modal-bg" id="profileModal" onclick="if(event.target===this)closeProfileEditor()">
   <div class="profile-modal">
     <h2 style="margin:0 0 10px;color:#0b1f42;font-size:1rem" id="profileModalTitle">Your Profile</h2>
@@ -341,14 +378,14 @@ body.app-home-mode>.app-footer,body.app-home-mode>#dataSafetyPanel,body.app-team
     </div>
     <div class="badge"><span>NET PAY</span><b id="topSal">0.000 KD</b></div>
   </div>
-  <div class="card" style="padding:10px;display:grid;gap:8px">
+  <div class="card" id="employeeDetailsCard" style="padding:10px;display:grid;gap:8px">
     <div class="sec-hdr"><span class="sec-title">Employee Details (Optional)</span></div>
     <div class="grid3" style="grid-template-columns:1fr 1fr">
       <div class="inp"><label>Employee Name (optional)</label><input id="employeeNameInp" type="text" placeholder="Employee name"></div>
       <div class="inp"><label>Employee ID (optional)</label><input id="employeeIdInp" type="text" placeholder="Employee ID"></div>
     </div>
   </div>
-  <div class="card">
+  <div class="card" id="salaryConfigCard">
     <div class="sec-hdr"><span class="sec-title">1. Salary Configuration</span><span class="rate-pill" id="topRate">1.010 KWD/HR</span></div>
     <div class="grid3">
       <div class="inp"><label>Country / Salary Currency</label><select id="currencyInp" onchange="saveCfg()"><option value="KWD">Kuwait (KWD)</option><option value="SAR">Saudi (SAR)</option><option value="AED">UAE (AED)</option><option value="QAR">Qatar (QAR)</option><option value="OMR">Oman (OMR)</option><option value="BHD">Bahrain (BHD)</option></select></div>
@@ -356,8 +393,7 @@ body.app-home-mode>.app-footer,body.app-home-mode>#dataSafetyPanel,body.app-team
       <div class="inp"><label id="allowLabel">Allowance (KWD)</label><input type="number" id="allowInp" value="0" onchange="saveCfg()"></div>
       <div class="inp"><label>OT Base</label><select id="baseInp" onchange="saveCfg()"><option value="26">26 Days</option></select></div>
     </div>
-    <div class="row"><span>Latest exchange rate:</span><b id="fxRate">Loading currency rate…</b></div>
-    <div class="note" id="fxUpdated">Internet connection is needed to fetch the latest daily rate.</div>
+    <div class="note">Basic Salary, Allowance and Country/Currency are saved once from the <b>Basic Details</b> icon on the Individual Dashboard.</div>
   </div>
   <div class="card nav">
     <button onclick="chgM(-1)">&larr; Prev</button><div><div class="mtitle" id="mLbl">Month</div><div class="msub">Tap date to manage attendance</div></div><button onclick="chgM(1)">Next &rarr;</button>
@@ -400,7 +436,12 @@ body.app-home-mode>.app-footer,body.app-home-mode>#dataSafetyPanel,body.app-team
     <div class="row"><span>Food / Other Allowance:</span><b id="rAll">+ 0.000 KWD</b></div>
     <div class="row" style="color:#dc2626"><span>Absent + Sick Deduction:</span><b id="rDed">- 0.000 KWD</b></div>
     <div class="tot"><span>Net Salary:</span><b id="rNet">210.000 KWD</b></div>
-    <div class="tot" style="background:#eff6ff;border-color:#93c5fd;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><span>Convert Net Salary To:</span><select id="targetCurrencyInp" aria-label="Convert salary to currency" onchange="saveTargetCurrency()" style="max-width:150px;padding:7px;border:1px solid #93c5fd;border-radius:8px;background:#fff;color:#1d4ed8;font-weight:800"><option value="INR">INR — Indian Rupee</option></select><b id="rNetInr" style="color:#1d4ed8">Loading…</b></div>
+    <div class="currency-rate-card" id="currencyRateCard">
+      <div class="sec-hdr" style="margin-bottom:6px"><span class="sec-title">💱 Currency Calculator & Exchange Rate</span></div>
+      <div class="tot" style="margin-top:0;background:#fff;border-color:#cbd5e1;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><span>Convert Net Salary To:</span><select id="targetCurrencyInp" aria-label="Convert salary to currency" onchange="saveTargetCurrency()" style="max-width:150px;padding:7px;border:1px solid #93c5fd;border-radius:8px;background:#fff;color:#1d4ed8;font-weight:800"><option value="INR">INR — Indian Rupee</option></select><b id="rNetInr" style="color:#1d4ed8">Loading…</b></div>
+      <div class="currency-rate-value" id="currencyRateValue">1 KWD = — INR</div>
+      <div class="currency-rate-updated" id="currencyRateUpdated">Rate updated: loading…<br>Provider daily rate. Bank/remittance rates may differ.</div>
+    </div>
     <div class="note" id="sickNote">Kuwait sick-leave estimate: first 15 days full pay, next 10 at 75%, next 10 at 50%, next 10 at 25%, next 30 unpaid. The app counts marked sick days by calendar year.</div>
   </div>
   <section class="card notes-card" id="workNotesSummary">
@@ -1052,6 +1093,10 @@ if ('serviceWorker' in navigator) { window.addEventListener('load', () => naviga
 function saveTargetCurrency(){
   const el=document.getElementById('targetCurrencyInp');
   if(el)localStorage.setItem(targetCurrencyKey,el.value||'INR');
+  const target=el?.value||'INR',rate=Number(fxRatesByCode[target]),cur=cfg.currency||'KWD';
+  const out=document.getElementById('currencyRateValue'),up=document.getElementById('currencyRateUpdated');
+  if(out)out.innerText='1 '+cur+' = '+(Number.isFinite(rate)?rate.toLocaleString('en-US',{maximumFractionDigits:4}):'—')+' '+target;
+  if(up)up.innerText='Rate updated: '+(fxUpdatedAt||'loading…')+'\nProvider daily rate. Bank/remittance rates may differ.';
   render();
 }
 function populateTargetCurrencies(rates){
@@ -1080,7 +1125,12 @@ function updateInrDisplay(net){
 async function loadFxRate(){
   const cur=cfg.currency||'KWD';
   const rateEl=document.getElementById('fxRate'), updEl=document.getElementById('fxUpdated');
-  rateEl.innerText='Fetching latest '+cur+' rates…';
+  const calcRateValue=document.getElementById('currencyRateValue'),calcUpdated=document.getElementById('currencyRateUpdated');
+  if(rateEl)rateEl.innerText='Fetching latest '+cur+' rates…';
+  if(updEl)updEl.innerText='Loading currency rates for the selected salary currency.';
+  if(calcRateValue)calcRateValue.innerText='1 '+cur+' = — INR';
+  if(calcUpdated)calcUpdated.innerText='Rate updated: loading…\nProvider daily rate. Bank/remittance rates may differ.';
+  
   document.getElementById('rNetInr').innerText='Loading rate…';
   updEl.innerText='Loading currency rates for the selected salary currency.';
   try{
@@ -1091,17 +1141,32 @@ async function loadFxRate(){
     fxRatesByCode=data.rates;fxRate=Number(data.rates.INR);fxUpdatedAt=data.time_last_update_utc||'Latest available';
     try{localStorage.setItem(fxCacheKey,JSON.stringify({currency:cur,rates:fxRatesByCode,rate:fxRate,updated:fxUpdatedAt,ts:Date.now()}));}catch(e){}
     populateTargetCurrencies(fxRatesByCode);
-    rateEl.innerText='1 '+cur+' = ₹ '+fxRate.toLocaleString('en-IN',{maximumFractionDigits:4});
-    updEl.innerText='Rates updated: '+fxUpdatedAt+' (provider daily rates; bank/remittance rates may differ).';
+    if(rateEl)rateEl.innerText='1 '+cur+' = ₹ '+fxRate.toLocaleString('en-IN',{maximumFractionDigits:4});
+    if(updEl)updEl.innerText='Rates updated: '+fxUpdatedAt+' (provider daily rates; bank/remittance rates may differ).';
+    const target=document.getElementById('targetCurrencyInp')?.value||'INR';
+    const targetRate=Number(fxRatesByCode[target]);
+    const targetName=target;
+    if(calcRateValue)calcRateValue.innerText='1 '+cur+' = '+(Number.isFinite(targetRate)?targetRate.toLocaleString('en-US',{maximumFractionDigits:4}):'—')+' '+targetName;
+    if(calcUpdated)calcUpdated.innerText='Rate updated: '+fxUpdatedAt+'\nProvider daily rate. Bank/remittance rates may differ.';
     render();
   }catch(err){
     let cached=null;try{cached=JSON.parse(localStorage.getItem(fxCacheKey)||'null')}catch(e){}
     if(cached&&cached.currency===cur&&cached.rates&&Number.isFinite(Number(cached.rates.INR))){
       fxRatesByCode=cached.rates;fxRate=Number(cached.rates.INR);fxUpdatedAt=cached.updated||'Saved rate';populateTargetCurrencies(fxRatesByCode);
-      rateEl.innerText='1 '+cur+' = ₹ '+fxRate.toLocaleString('en-IN',{maximumFractionDigits:4})+' (saved rate)';
-      updEl.innerText='Internet rate could not be refreshed. Showing saved rates from '+fxUpdatedAt+'.';render();
+      if(rateEl)rateEl.innerText='1 '+cur+' = ₹ '+fxRate.toLocaleString('en-IN',{maximumFractionDigits:4})+' (saved rate)';
+      if(updEl)updEl.innerText='Internet rate could not be refreshed. Showing saved rates from '+fxUpdatedAt+'.';
+      const target=document.getElementById('targetCurrencyInp')?.value||'INR';
+      const targetRate=Number(fxRatesByCode[target]);
+      if(calcRateValue)calcRateValue.innerText='1 '+cur+' = '+(Number.isFinite(targetRate)?targetRate.toLocaleString('en-US',{maximumFractionDigits:4}):'—')+' '+target;
+      if(calcUpdated)calcUpdated.innerText='Rate updated: '+fxUpdatedAt+' (saved rate)\nProvider daily rate. Bank/remittance rates may differ.';
+      render();
     }else{
-      fxRatesByCode={};fxRate=null;rateEl.innerText='Rate unavailable';updEl.innerText='Connect to the internet to load worldwide currency rates.';document.getElementById('rNetInr').innerText='Rate unavailable';
+      fxRatesByCode={};fxRate=null;
+      if(rateEl)rateEl.innerText='Rate unavailable';
+      if(updEl)updEl.innerText='Connect to the internet to load worldwide currency rates.';
+      if(calcRateValue)calcRateValue.innerText='1 '+cur+' = — INR';
+      if(calcUpdated)calcUpdated.innerText='Rate updated: unavailable\nProvider daily rate. Bank/remittance rates may differ.';
+      document.getElementById('rNetInr').innerText='Rate unavailable';
     }
   }
 }
@@ -1302,7 +1367,7 @@ function renderMonthCards(){
   });
 }
 function openIndividualDashboard(push=true){
-  appMode='individual';setLegacyInterfaceVisible(false);document.body.classList.remove('app-home-mode','app-team-mode');document.getElementById('appHome').style.display='none';document.getElementById('teamView').style.display='none';document.getElementById('appModeBar').style.display='block';document.getElementById('modeBarLabel').innerText='Individual — My Salary';hideDashScreens();document.getElementById('individualDashboard').style.display='block';loadDashboardProfile();renderMonthCards();
+  appMode='individual';setLegacyInterfaceVisible(false);document.body.classList.remove('app-home-mode','app-team-mode','month-detail-mode','leave-mode');document.getElementById('appHome').style.display='none';document.getElementById('teamView').style.display='none';document.getElementById('appModeBar').style.display='block';document.getElementById('modeBarLabel').innerText='Individual — My Salary';hideDashScreens();document.getElementById('individualDashboard').style.display='block';loadDashboardProfile();renderMonthCards();
   const n=Object.values(readJsonKey('gulf_work_notes_v1',{})).reduce((a,v)=>a+(Array.isArray(v)?v.length:0),0);document.getElementById('dashNotesHint').innerText=n+' note'+(n===1?'':'s')+' from all months';
   if(push)history.pushState({gulfMode:'individual'},'',location.href.split('#')[0]+'#individual');
   window.scrollTo(0,0);
@@ -1311,6 +1376,9 @@ function openMonthFromDashboard(){const months=getAvailableMonths();if(months.le
 function openMonthDetail(year,month,push=true){
   // Use the real legacy salary/attendance interface so all existing handlers and data remain connected.
   y=year;m=month;
+  appMode='month';
+  document.body.classList.remove('app-home-mode','app-team-mode','leave-mode');
+  document.body.classList.add('month-detail-mode');
   const label=new Date(year,month,1).toLocaleString('en-US',{month:'long',year:'numeric'});
   document.getElementById('monthDetailTitle').innerText=label;
   document.getElementById('individualDashboard').style.display='none';
@@ -1325,7 +1393,7 @@ function openMonthDetail(year,month,push=true){
   if(cal)cal.scrollIntoView({behavior:'smooth',block:'start'});
   if(push)history.pushState({gulfMode:'month',y:year,m:month},'',location.href.split('#')[0]+'#month-'+year+'-'+(month+1));
 }
-function closeMonthDetail(){openIndividualDashboard(false);history.replaceState({gulfMode:'individual'},'',location.href.split('#')[0]+'#individual');}
+function closeMonthDetail(){document.body.classList.remove('month-detail-mode','leave-mode');openIndividualDashboard(false);history.replaceState({gulfMode:'individual'},'',location.href.split('#')[0]+'#individual');}
 function openAllWorkNotes(push=true){
   document.getElementById('individualDashboard').style.display='none';document.getElementById('monthDetail').style.display='none';document.getElementById('notesDashboard').style.display='block';renderAllWorkNotes();
   if(push)history.pushState({gulfMode:'notes'},'',location.href.split('#')[0]+'#notes');window.scrollTo(0,0);
@@ -1340,19 +1408,61 @@ function renderAllWorkNotes(){
     groups[g].sort((a,b)=>Number(b.split('-')[2])-Number(a.split('-')[2])).forEach(k=>notes[k].forEach(n=>{const d=document.createElement('div');d.className='note-all-item';d.innerHTML='<div class="note-all-date"></div><div class="note-all-text"></div>';d.querySelector('.note-all-date').innerText=k.split('-')[2]+'/'+m+'/'+y+' • '+(noteStatusLabel(n.status)||'Normal');d.querySelector('.note-all-text').innerText=n.text;sec.appendChild(d);}));box.appendChild(sec);
   });
 }
+function openBasicDetails(){
+  const p=readJsonKey(APP_PROFILE_KEY,{});
+  document.getElementById('basicDashName').value=localStorage.getItem('gulf_employee_name_v1')||p.name||'';
+  document.getElementById('basicDashId').value=localStorage.getItem('gulf_employee_id_v1')||p.employeeId||'';
+  document.getElementById('basicDashCurrency').value=cfg.currency||'KWD';
+  document.getElementById('basicDashBasic').value=cfg.basic||0;
+  document.getElementById('basicDashAllow').value=cfg.allow||0;
+  document.getElementById('basicDetailsModal').style.display='flex';
+}
+function closeBasicDetails(){document.getElementById('basicDetailsModal').style.display='none';}
+function saveBasicDetails(){
+  const name=document.getElementById('basicDashName').value.trim();
+  const id=document.getElementById('basicDashId').value.trim();
+  const currency=document.getElementById('basicDashCurrency').value||'KWD';
+  const basic=Math.max(0,Number(document.getElementById('basicDashBasic').value)||0);
+  const allow=Number(document.getElementById('basicDashAllow').value)||0;
+  localStorage.setItem('gulf_employee_name_v1',name);
+  localStorage.setItem('gulf_employee_id_v1',id);
+  document.getElementById('employeeNameInp').value=name;
+  document.getElementById('employeeIdInp').value=id;
+  document.getElementById('currencyInp').value=currency;
+  document.getElementById('basicInp').value=basic;
+  document.getElementById('allowInp').value=allow;
+  saveCfg();
+  closeBasicDetails();
+  loadDashboardProfile();
+  alert('Basic Details saved.');
+}
 function openLeaveDashboard(push=true){
-  document.getElementById('individualDashboard').style.display='none';document.getElementById('monthDetail').style.display='none';document.getElementById('notesDashboard').style.display='none';setLegacyInterfaceVisible(true);
-  const panel=document.getElementById('vacationPanel');if(panel)panel.scrollIntoView({behavior:'smooth'});
+  appMode='leave';
+  document.body.classList.remove('app-home-mode','app-team-mode','month-detail-mode');
+  document.body.classList.add('leave-mode');
+  document.getElementById('individualDashboard').style.display='none';
+  document.getElementById('monthDetail').style.display='none';
+  document.getElementById('notesDashboard').style.display='none';
+  setLegacyInterfaceVisible(false);
+  document.getElementById('appModeBar').style.display='block';
+  document.getElementById('modeBarLabel').innerText='Leave & Final Settlement';
+  const panel=document.getElementById('vacationPanel');if(panel){panel.style.display='block';panel.scrollIntoView({behavior:'smooth',block:'start'});}
+  loadVacationData();
   if(push)history.pushState({gulfMode:'leave'},'',location.href.split('#')[0]+'#leave');
 }
 function openAppMode(mode,push=true){
   if(mode==='individual'){openIndividualDashboard(push);return;}
+  document.body.classList.remove('month-detail-mode','leave-mode');
   appMode='team';setLegacyInterfaceVisible(false);document.getElementById('appHome').style.display='none';document.getElementById('individualDashboard').style.display='none';document.getElementById('monthDetail').style.display='none';document.getElementById('notesDashboard').style.display='none';document.getElementById('teamView').style.display='block';document.getElementById('appModeBar').style.display='block';document.body.classList.remove('app-home-mode');document.body.classList.add('app-team-mode');document.getElementById('modeBarLabel').innerText='Supervisor / Foreman';renderTeam();if(push)history.pushState({gulfMode:'team'},'',location.href.split('#')[0]+'#team');window.scrollTo(0,0);
 }
 function showAppHome(replace=true){
-  appMode='home';document.body.classList.add('app-home-mode');document.body.classList.remove('app-team-mode');document.getElementById('appModeBar').style.display='none';document.getElementById('appHome').style.display='block';document.getElementById('teamView').style.display='none';hideDashScreens();setLegacyInterfaceVisible(false);loadAppProfile();if(replace)history.replaceState({gulfMode:'home'},'',location.href.split('#')[0]+'#home');window.scrollTo(0,0);
+  appMode='home';document.body.classList.add('app-home-mode');document.body.classList.remove('app-team-mode','month-detail-mode','leave-mode');document.getElementById('appModeBar').style.display='none';document.getElementById('appHome').style.display='block';document.getElementById('teamView').style.display='none';hideDashScreens();setLegacyInterfaceVisible(false);loadAppProfile();if(replace)history.replaceState({gulfMode:'home'},'',location.href.split('#')[0]+'#home');window.scrollTo(0,0);
 }
-window.addEventListener('popstate',function(){if(appMode!=='home')showAppHome(true);});
+window.addEventListener('popstate',function(){
+  if(appMode==='leave'){document.body.classList.remove('leave-mode');openIndividualDashboard(false);return;}
+  if(appMode==='month'){openIndividualDashboard(false);return;}
+  if(appMode!=='home')showAppHome(true);
+});
 document.addEventListener('DOMContentLoaded',()=>{loadAppProfile();if(location.hash==='#individual')openIndividualDashboard(false);else if(location.hash==='#team')openAppMode('team',false);else showAppHome(true);});
 
 </script>
