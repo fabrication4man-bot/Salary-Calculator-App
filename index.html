@@ -179,6 +179,13 @@ body.app-home-mode>.app-footer,body.app-home-mode>#dataSafetyPanel,body.app-team
 .worker-feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.worker-feature{padding:12px;border-radius:11px;border:1px solid #dce4ef;background:#f8fafc;text-align:center;font-weight:800;font-size:.76rem;color:#0b1f42}
 @media(max-width:360px){.app-home{padding:10px 0 22px}.home-ad-actions{grid-template-columns:1fr}.team-stats{gap:5px}}
 
+
+.individual-dashboard,.month-detail,.notes-dashboard{max-width:760px;margin:0 auto;padding:12px 12px 30px}
+.individual-head{background:#0b1f42;color:#fff;border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 5px 16px rgba(0,0,0,.12)}
+.individual-head-top{display:flex;align-items:center;justify-content:space-between;gap:12px}.dash-kicker{font-size:.68rem;font-weight:900;color:#f5ce71;letter-spacing:.7px}.individual-head h1{margin:3px 0;font-size:1.25rem}.individual-head p{margin:0;font-size:.78rem;opacity:.85}.dash-profile-photo{width:62px;height:62px;border-radius:50%;object-fit:cover;border:2px solid #f5ce71;background:#eef2f7}
+.dash-grid{display:grid;gap:10px}.dash-card{width:100%;display:grid;grid-template-columns:52px 1fr 20px;align-items:center;text-align:left;gap:10px;padding:13px;border:1px solid #e2e8f0;border-radius:15px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.05)}.dash-card h3{margin:0;color:#0b1f42;font-size:.92rem}.dash-card p{margin:4px 0 0;color:#64748b;font-size:.72rem}.dash-card>span{font-size:1.3rem;color:#64748b}.dash-icon{width:44px;height:44px;border-radius:13px;background:#eef4ff;display:grid;place-items:center;font-size:1.35rem}
+.month-section{margin-top:16px;background:#fff;border:1px solid #e2e8f0;border-radius:15px;padding:13px}.section-row{display:flex;justify-content:space-between;align-items:center}.section-row h2{margin:0;font-size:1rem;color:#0b1f42}.section-row span{font-size:.72rem;color:#64748b}.month-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}.month-card{border:1px solid #dbe4f0;border-radius:14px;padding:12px;background:#f8fafc;text-align:left;min-height:105px}.month-card .mi{font-size:1.35rem}.month-card h3{margin:5px 0 2px;color:#0b1f42;font-size:.88rem}.month-card p{margin:0;color:#64748b;font-size:.68rem;line-height:1.4}.month-card b{color:#0b1f42}.dash-footer-actions{margin-top:12px}.dash-footer-actions button,.detail-head button{border:1px solid #cbd5e1;background:#fff;border-radius:10px;padding:9px 12px;font-weight:800;color:#0b1f42}.detail-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}.detail-head h1{margin:0;color:#0b1f42;font-size:1.1rem}.detail-head p{margin:3px 0 0;color:#64748b;font-size:.72rem}.notes-dashboard{background:#f8fafc}.note-all-month{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:11px;margin-bottom:10px}.note-all-month h3{margin:0 0 8px;color:#0b1f42;font-size:.9rem}.note-all-item{padding:8px 0;border-top:1px solid #edf2f7;font-size:.78rem}.note-all-item:first-of-type{border-top:0}.note-all-date{font-weight:900;color:#334155;font-size:.68rem}.note-all-text{margin-top:3px;color:#475569}.note-all-status{font-size:.65rem;font-weight:800;margin-left:6px}
+@media(max-width:430px){.month-cards{grid-template-columns:1fr 1fr}.individual-dashboard,.month-detail,.notes-dashboard{padding-left:10px;padding-right:10px}}
 </style>
 </head>
 <body class="app-home-mode">
@@ -218,6 +225,53 @@ body.app-home-mode>.app-footer,body.app-home-mode>#dataSafetyPanel,body.app-team
   </div>
 </section>
 
+
+<section class="individual-dashboard" id="individualDashboard" style="display:none">
+  <div class="individual-head">
+    <div class="individual-head-top">
+      <div>
+        <div class="dash-kicker">INDIVIDUAL</div>
+        <h1 id="dashProfileName">My Salary Dashboard</h1>
+        <p id="dashProfileMeta">Salary • Attendance • OT</p>
+      </div>
+      <img id="dashProfilePhoto" class="dash-profile-photo" alt="Profile photo" src="">
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <button type="button" class="dash-card" onclick="openMonthFromDashboard()">
+      <div class="dash-icon">📅</div><div><h3>Monthly Salary & Attendance</h3><p id="dashMonthHint">Open current month</p></div><span>›</span>
+    </button>
+    <button type="button" class="dash-card" onclick="openAllWorkNotes()">
+      <div class="dash-icon">📝</div><div><h3>All Work Notes</h3><p id="dashNotesHint">View notes from all months</p></div><span>›</span>
+    </button>
+    <button type="button" class="dash-card" onclick="openLeaveDashboard()">
+      <div class="dash-icon">🏖️</div><div><h3>Leave & Final Settlement</h3><p>Leave balance, dates and settlement</p></div><span>›</span>
+    </button>
+  </div>
+
+  <div class="month-section">
+    <div class="section-row"><h2>📅 My Months</h2><span id="monthCountLabel">0 months</span></div>
+    <div id="monthCards" class="month-cards"></div>
+  </div>
+
+  <div class="dash-footer-actions">
+    <button type="button" onclick="showAppHome()">← Main Menu</button>
+  </div>
+</section>
+
+<section class="month-detail" id="monthDetail" style="display:none">
+  <div class="detail-head">
+    <button type="button" onclick="closeMonthDetail()">← Back</button>
+    <div><h1 id="monthDetailTitle">November 2026</h1><p>Salary • Attendance • OT • Work Notes</p></div>
+  </div>
+  <div id="monthLegacyHost"></div>
+</section>
+
+<section class="notes-dashboard" id="notesDashboard" style="display:none">
+  <div class="detail-head"><button type="button" onclick="closeNotesDashboard()">← Back</button><div><h1>📝 All Work Notes</h1><p>Notes from every month</p></div></div>
+  <div id="allNotesDashboardList"></div>
+</section>
 <section class="team-view" id="teamView">
   <div class="team-head">
     <h1>👥 My Team</h1>
@@ -1215,52 +1269,81 @@ function saveWorker(){const name=document.getElementById('workerName').value.tri
 function renderTeam(){const team=getTeam(),list=document.getElementById('teamList');if(!list)return;document.getElementById('teamCount').innerText=team.length;document.getElementById('teamActive').innerText=team.filter(w=>w.active!==false).length;document.getElementById('teamMonth').innerText=new Date().toLocaleString('en-US',{month:'short',year:'numeric'});if(!team.length){list.innerHTML='<div class="team-empty">No workers added yet.<br>Tap <b>＋ Add Worker</b> to create your first worker profile.</div>';return;}list.innerHTML='';team.forEach(w=>{const card=document.createElement('div');card.className='worker-card';const img=document.createElement('img');img.src=w.photo||safeImagePlaceholder();img.alt='';const body=document.createElement('div');body.style.flex='1';body.innerHTML='<h3></h3><p></p>';body.querySelector('h3').innerText=w.name;body.querySelector('p').innerText=[w.employeeId||'No Employee ID',w.designation||'No designation'].join(' • ');const arrow=document.createElement('div');arrow.className='worker-arrow';arrow.innerText='›';card.append(img,body,arrow);card.onclick=()=>openWorkerDetail(w.id);list.appendChild(card);});}
 function openWorkerDetail(workerId){const w=getTeam().find(x=>x.id===workerId);if(!w)return;const panel=document.getElementById('teamDetail'),listPanel=document.getElementById('teamListPanel');panel.innerHTML='<div class="worker-detail-top"><img src="" alt=""><div><h2></h2><p></p></div></div><div class="worker-feature-grid"><div class="worker-feature">📅<br>Attendance</div><div class="worker-feature">💰<br>Salary</div><div class="worker-feature">⏱️<br>OT</div><div class="worker-feature">🏖️<br>Leave</div><div class="worker-feature">📝<br>Work Notes</div><div class="worker-feature">📊<br>Monthly Summary</div></div><div style="margin-top:10px;display:flex;gap:8px"><button type="button" class="footer-action" onclick="closeWorkerDetail()">← Back to Workers</button><button type="button" class="footer-action primary" onclick="openWorkerEditor(\''+w.id+'\')">✏️ Edit Worker</button></div>';panel.querySelector('img').src=w.photo||safeImagePlaceholder();panel.querySelector('h2').innerText=w.name;panel.querySelector('p').innerText=[w.employeeId?'Emp ID: '+w.employeeId:'No Employee ID',w.designation||'',w.basic+' '+w.currency+' basic'].filter(Boolean).join(' • ');panel.style.display='block';listPanel.style.display='none';}
 function closeWorkerDetail(){document.getElementById('teamDetail').style.display='none';document.getElementById('teamListPanel').style.display='block';}
+
 function setLegacyInterfaceVisible(visible){
   const header=document.querySelector('body>header'),wrap=document.querySelector('body>.wrap');
   if(header)header.style.setProperty('display',visible?'block':'none','important');
   if(wrap)wrap.style.setProperty('display',visible?'block':'none','important');
 }
-function openAppMode(mode,push=true){
-  appMode=mode;
-  document.getElementById('appHome').style.display='none';
-  document.getElementById('teamView').style.display='none';
-  document.getElementById('appModeBar').style.display='block';
-  document.body.classList.remove('app-home-mode','app-team-mode');
-  setLegacyInterfaceVisible(mode==='individual');
-  if(mode==='team'){
-    document.body.classList.add('app-team-mode');
-    document.getElementById('teamView').style.display='block';
-    document.getElementById('modeBarLabel').innerText='Supervisor / Foreman';
-    renderTeam();
-  }else{
-    document.getElementById('modeBarLabel').innerText='Individual — My Salary';
-    loadAppProfile();
-    try{if(typeof render==='function')render();}catch(e){}
-  }
-  if(push)history.pushState({gulfMode:mode},'',location.href.split('#')[0]+'#'+mode);
+function hideDashScreens(){['individualDashboard','monthDetail','notesDashboard'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});}
+function loadDashboardProfile(){
+  const p=readJsonKey(APP_PROFILE_KEY,{});
+  const name=document.getElementById('dashProfileName'),meta=document.getElementById('dashProfileMeta'),img=document.getElementById('dashProfilePhoto');
+  if(name)name.innerText=p.name||'My Salary Dashboard';
+  if(meta)meta.innerText=[p.employeeId,p.designation].filter(Boolean).join(' • ')||'Salary • Attendance • OT';
+  if(img)img.src=p.photo||safeImagePlaceholder();
+}
+function monthKey(y,m){return y+'-'+(m+1);}
+function getAvailableMonths(){
+  const set=new Set(),att=readJsonKey('gulf_att_v5',{}),notes=readJsonKey('gulf_work_notes_v1',{});
+  Object.keys(att||{}).forEach(k=>{const p=k.split('-');if(p.length>=2)set.add(p[0]+'-'+p[1]);});
+  Object.keys(notes||{}).forEach(k=>{const p=k.split('-');if(p.length>=2)set.add(p[0]+'-'+p[1]);});
+  const now=new Date();set.add(now.getFullYear()+'-'+(now.getMonth()+1));
+  return [...set].map(k=>{const p=k.split('-');return {y:Number(p[0]),m:Number(p[1])-1};}).sort((a,b)=>b.y-a.y||b.m-a.m);
+}
+function renderMonthCards(){
+  const box=document.getElementById('monthCards');if(!box)return;box.innerHTML='';
+  const months=getAvailableMonths();document.getElementById('monthCountLabel').innerText=months.length+' month'+(months.length===1?'':'s');
+  const att=readJsonKey('gulf_att_v5',{}),notes=readJsonKey('gulf_work_notes_v1',{});
+  months.forEach(x=>{
+    const keyPrefix=x.y+'-'+(x.m+1)+'-',days=Object.keys(att).filter(k=>k.startsWith(keyPrefix)).length,noteCount=Object.keys(notes).filter(k=>k.startsWith(keyPrefix)).reduce((n,k)=>n+(Array.isArray(notes[k])?notes[k].length:0),0);
+    const b=document.createElement('button');b.type='button';b.className='month-card';b.innerHTML='<div class="mi">📅</div><h3></h3><p></p>';
+    const label=new Date(x.y,x.m,1).toLocaleString('en-US',{month:'long',year:'numeric'});b.querySelector('h3').innerText=label;b.querySelector('p').innerText=days+' attendance date'+(days===1?'':'s')+' • '+noteCount+' note'+(noteCount===1?'':'s');b.onclick=()=>openMonthDetail(x.y,x.m);box.appendChild(b);
+  });
+}
+function openIndividualDashboard(push=true){
+  appMode='individual';setLegacyInterfaceVisible(false);document.body.classList.remove('app-home-mode','app-team-mode');document.getElementById('appHome').style.display='none';document.getElementById('teamView').style.display='none';document.getElementById('appModeBar').style.display='block';document.getElementById('modeBarLabel').innerText='Individual — My Salary';hideDashScreens();document.getElementById('individualDashboard').style.display='block';loadDashboardProfile();renderMonthCards();
+  const n=Object.values(readJsonKey('gulf_work_notes_v1',{})).reduce((a,v)=>a+(Array.isArray(v)?v.length:0),0);document.getElementById('dashNotesHint').innerText=n+' note'+(n===1?'':'s')+' from all months';
+  if(push)history.pushState({gulfMode:'individual'},'',location.href.split('#')[0]+'#individual');
   window.scrollTo(0,0);
+}
+function openMonthFromDashboard(){const months=getAvailableMonths();if(months.length)openMonthDetail(months[0].y,months[0].m);}
+function openMonthDetail(y,m,push=true){
+  const label=new Date(y,m,1).toLocaleString('en-US',{month:'long',year:'numeric'});document.getElementById('monthDetailTitle').innerText=label;document.getElementById('individualDashboard').style.display='none';document.getElementById('notesDashboard').style.display='none';document.getElementById('monthDetail').style.display='block';document.getElementById('monthLegacyHost').innerHTML='';
+  const host=document.getElementById('monthLegacyHost'),wrap=document.querySelector('body>.wrap');if(wrap){const clone=wrap.cloneNode(true);clone.querySelectorAll('script').forEach(s=>s.remove());host.appendChild(clone);}
+  try{if(typeof render==='function')render();}catch(e){}
+  if(push)history.pushState({gulfMode:'month',y,m},'',location.href.split('#')[0]+'#month-'+y+'-'+(m+1));window.scrollTo(0,0);
+}
+function closeMonthDetail(){openIndividualDashboard(false);history.replaceState({gulfMode:'individual'},'',location.href.split('#')[0]+'#individual');}
+function openAllWorkNotes(push=true){
+  document.getElementById('individualDashboard').style.display='none';document.getElementById('monthDetail').style.display='none';document.getElementById('notesDashboard').style.display='block';renderAllWorkNotes();
+  if(push)history.pushState({gulfMode:'notes'},'',location.href.split('#')[0]+'#notes');window.scrollTo(0,0);
+}
+function renderAllWorkNotes(){
+  const box=document.getElementById('allNotesDashboardList'),notes=readJsonKey('gulf_work_notes_v1',{});box.innerHTML='';
+  const keys=Object.keys(notes).filter(k=>Array.isArray(notes[k])&&notes[k].length).sort((a,b)=>{const pa=a.split('-').map(Number),pb=b.split('-').map(Number);return pb[0]-pa[0]||pb[1]-pa[1]||pb[2]-pa[2];});
+  if(!keys.length){box.innerHTML='<div class="note-all-month">No work notes saved yet.</div>';return;}
+  const groups={};keys.forEach(k=>{const p=k.split('-'),g=p[0]+'-'+p[1];(groups[g]??=[]).push(k);});
+  Object.keys(groups).sort((a,b)=>{const pa=a.split('-').map(Number),pb=b.split('-').map(Number);return pb[0]-pa[0]||pb[1]-pa[1];}).forEach(g=>{
+    const [y,m]=g.split('-').map(Number),sec=document.createElement('div');sec.className='note-all-month';sec.innerHTML='<h3></h3>';sec.querySelector('h3').innerText=new Date(y,m-1,1).toLocaleString('en-US',{month:'long',year:'numeric'});
+    groups[g].sort((a,b)=>Number(b.split('-')[2])-Number(a.split('-')[2])).forEach(k=>notes[k].forEach(n=>{const d=document.createElement('div');d.className='note-all-item';d.innerHTML='<div class="note-all-date"></div><div class="note-all-text"></div>';d.querySelector('.note-all-date').innerText=k.split('-')[2]+'/'+m+'/'+y+' • '+(noteStatusLabel(n.status)||'Normal');d.querySelector('.note-all-text').innerText=n.text;sec.appendChild(d);}));box.appendChild(sec);
+  });
+}
+function openLeaveDashboard(push=true){
+  document.getElementById('individualDashboard').style.display='none';document.getElementById('monthDetail').style.display='none';document.getElementById('notesDashboard').style.display='none';setLegacyInterfaceVisible(true);
+  const panel=document.getElementById('vacationPanel');if(panel)panel.scrollIntoView({behavior:'smooth'});
+  if(push)history.pushState({gulfMode:'leave'},'',location.href.split('#')[0]+'#leave');
+}
+function openAppMode(mode,push=true){
+  if(mode==='individual'){openIndividualDashboard(push);return;}
+  appMode='team';setLegacyInterfaceVisible(false);document.getElementById('appHome').style.display='none';document.getElementById('individualDashboard').style.display='none';document.getElementById('monthDetail').style.display='none';document.getElementById('notesDashboard').style.display='none';document.getElementById('teamView').style.display='block';document.getElementById('appModeBar').style.display='block';document.body.classList.remove('app-home-mode');document.body.classList.add('app-team-mode');document.getElementById('modeBarLabel').innerText='Supervisor / Foreman';renderTeam();if(push)history.pushState({gulfMode:'team'},'',location.href.split('#')[0]+'#team');window.scrollTo(0,0);
 }
 function showAppHome(replace=true){
-  appMode='home';
-  document.body.classList.add('app-home-mode');
-  document.body.classList.remove('app-team-mode');
-  document.getElementById('appModeBar').style.display='none';
-  document.getElementById('appHome').style.display='block';
-  document.getElementById('teamView').style.display='none';
-  setLegacyInterfaceVisible(false);
-  loadAppProfile();
-  if(replace)history.replaceState({gulfMode:'home'},'',location.href.split('#')[0]+'#home');
-  window.scrollTo(0,0);
+  appMode='home';document.body.classList.add('app-home-mode');document.body.classList.remove('app-team-mode');document.getElementById('appModeBar').style.display='none';document.getElementById('appHome').style.display='block';document.getElementById('teamView').style.display='none';hideDashScreens();setLegacyInterfaceVisible(false);loadAppProfile();if(replace)history.replaceState({gulfMode:'home'},'',location.href.split('#')[0]+'#home');window.scrollTo(0,0);
 }
-window.addEventListener('popstate',function(){
-  if(appMode!=='home'){showAppHome(true);}
-});
-document.addEventListener('DOMContentLoaded',()=>{
-  loadAppProfile();
-  if(location.hash==='#individual')openAppMode('individual',false);
-  else if(location.hash==='#team')openAppMode('team',false);
-  else showAppHome(true);
-});
+window.addEventListener('popstate',function(){if(appMode!=='home')showAppHome(true);});
+document.addEventListener('DOMContentLoaded',()=>{loadAppProfile();if(location.hash==='#individual')openIndividualDashboard(false);else if(location.hash==='#team')openAppMode('team',false);else showAppHome(true);});
+
 </script>
 </body>
 </html>
