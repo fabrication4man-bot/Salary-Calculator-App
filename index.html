@@ -198,6 +198,8 @@ body.leave-mode>.wrap{display:none!important}
 body.leave-mode #vacationPanel{display:block!important;max-width:760px;margin:12px auto 30px}
 body.leave-mode #dataSafetyPanel{display:none!important}
 body.leave-mode .app-modebar{display:block!important}
+body.individual-mode #vacationPanel,
+body.individual-mode #dataSafetyPanel{display:none!important}
 body.month-detail-mode .app-footer{display:block!important}
 body.month-detail-mode #vacationPanel,
 body.month-detail-mode #dataSafetyPanel{display:none!important}
@@ -1382,7 +1384,7 @@ function renderMonthCards(){
   });
 }
 function openIndividualDashboard(push=true){
-  appMode='individual';setLegacyInterfaceVisible(false);document.body.classList.remove('app-home-mode','app-team-mode','month-detail-mode','leave-mode');document.getElementById('appHome').style.display='none';document.getElementById('teamView').style.display='none';document.getElementById('appModeBar').style.display='block';document.getElementById('modeBarLabel').innerText='Individual — My Salary';hideDashScreens();document.getElementById('individualDashboard').style.display='block';loadDashboardProfile();renderMonthCards();
+  appMode='individual';setLegacyInterfaceVisible(false);document.body.classList.remove('app-home-mode','app-team-mode','month-detail-mode','leave-mode');document.body.classList.add('individual-mode');document.getElementById('appHome').style.display='none';document.getElementById('teamView').style.display='none';document.getElementById('appModeBar').style.display='block';document.getElementById('modeBarLabel').innerText='Individual — My Salary';hideDashScreens();document.getElementById('individualDashboard').style.display='block';loadDashboardProfile();renderMonthCards();
   const n=Object.values(readJsonKey('gulf_work_notes_v1',{})).reduce((a,v)=>a+(Array.isArray(v)?v.length:0),0);document.getElementById('dashNotesHint').innerText=n+' note'+(n===1?'':'s')+' from all months';
   if(push)history.pushState({gulfMode:'individual'},'',location.href.split('#')[0]+'#individual');
   window.scrollTo(0,0);
@@ -1392,7 +1394,7 @@ function openMonthDetail(year,month,push=true){
   // Use the real legacy salary/attendance interface so all existing handlers and data remain connected.
   y=year;m=month;
   appMode='month';
-  document.body.classList.remove('app-home-mode','app-team-mode','leave-mode');
+  document.body.classList.remove('app-home-mode','app-team-mode','leave-mode','individual-mode');
   document.body.classList.add('month-detail-mode');
   const label=new Date(year,month,1).toLocaleString('en-US',{month:'long',year:'numeric'});
   document.getElementById('monthDetailTitle').innerText=label;
@@ -1453,7 +1455,7 @@ function saveBasicDetails(){
 }
 function openLeaveDashboard(push=true){
   appMode='leave';
-  document.body.classList.remove('app-home-mode','app-team-mode','month-detail-mode');
+  document.body.classList.remove('app-home-mode','app-team-mode','month-detail-mode','individual-mode');
   document.body.classList.add('leave-mode');
   document.getElementById('individualDashboard').style.display='none';
   document.getElementById('monthDetail').style.display='none';
@@ -1471,7 +1473,7 @@ function openAppMode(mode,push=true){
   appMode='team';setLegacyInterfaceVisible(false);document.getElementById('appHome').style.display='none';document.getElementById('individualDashboard').style.display='none';document.getElementById('monthDetail').style.display='none';document.getElementById('notesDashboard').style.display='none';document.getElementById('teamView').style.display='block';document.getElementById('appModeBar').style.display='block';document.body.classList.remove('app-home-mode');document.body.classList.add('app-team-mode');document.getElementById('modeBarLabel').innerText='Supervisor / Foreman';renderTeam();if(push)history.pushState({gulfMode:'team'},'',location.href.split('#')[0]+'#team');window.scrollTo(0,0);
 }
 function showAppHome(replace=true){
-  appMode='home';document.body.classList.add('app-home-mode');document.body.classList.remove('app-team-mode','month-detail-mode','leave-mode');document.getElementById('appModeBar').style.display='none';document.getElementById('appHome').style.display='block';document.getElementById('teamView').style.display='none';hideDashScreens();setLegacyInterfaceVisible(false);loadAppProfile();if(replace)history.replaceState({gulfMode:'home'},'',location.href.split('#')[0]+'#home');window.scrollTo(0,0);
+  appMode='home';document.body.classList.add('app-home-mode');document.body.classList.remove('app-team-mode','month-detail-mode','leave-mode','individual-mode');document.getElementById('appModeBar').style.display='none';document.getElementById('appHome').style.display='block';document.getElementById('teamView').style.display='none';hideDashScreens();setLegacyInterfaceVisible(false);loadAppProfile();if(replace)history.replaceState({gulfMode:'home'},'',location.href.split('#')[0]+'#home');window.scrollTo(0,0);
 }
 window.addEventListener('popstate',function(){
   if(appMode==='leave'){document.body.classList.remove('leave-mode');openIndividualDashboard(false);return;}
