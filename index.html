@@ -1131,8 +1131,9 @@ async function loadFxRate(){
   if(calcRateValue)calcRateValue.innerText='1 '+cur+' = — INR';
   if(calcUpdated)calcUpdated.innerText='Rate updated: loading…\nProvider daily rate. Bank/remittance rates may differ.';
   
-  document.getElementById('rNetInr').innerText='Loading rate…';
-  updEl.innerText='Loading currency rates for the selected salary currency.';
+  const netInrEl=document.getElementById('rNetInr');
+  if(netInrEl)netInrEl.innerText='Loading rate…';
+  if(updEl)updEl.innerText='Loading currency rates for the selected salary currency.';
   try{
     let data=null, lastErr=null;
     const endpoints=[
