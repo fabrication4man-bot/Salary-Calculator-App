@@ -139,9 +139,144 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
 .note-editor textarea{width:100%;min-height:145px;resize:vertical;border:1.5px solid #cbd5e1;border-radius:10px;padding:10px;font-size:.85rem;line-height:1.4}
 .note-editor select{width:100%;padding:9px;border:1.5px solid #cbd5e1;border-radius:10px;font-weight:700;background:#fff}
 .note-actions{display:flex;gap:8px;margin-top:10px}.note-actions button{flex:1;padding:10px;border:0;border-radius:10px;font-weight:800;cursor:pointer}.note-save{background:#166534;color:#fff}.note-cancel{background:#e2e8f0}.note-delete{background:#fee2e2;color:#b91c1c}
+
+/* ===== New app home / mode interface ===== */
+.app-home-mode>header,.app-home-mode>.wrap,.app-team-mode>header,.app-team-mode>.wrap{display:none!important}
+.app-modebar{display:none;position:sticky;top:0;z-index:120;background:#07152f;color:#fff;padding:8px 10px;border-bottom:2px solid #e3ad35}
+.app-modebar-inner{max-width:480px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.app-modebar button{border:1px solid rgba(227,173,53,.65);background:#163d70;color:#fff;border-radius:9px;padding:7px 10px;font-weight:800}
+.app-modebar .mode-label{font-size:.78rem;font-weight:800}
+.app-home{max-width:480px;margin:0 auto;padding:14px 0 28px}
+.app-home-hero{background:linear-gradient(135deg,#07152f,#163d70);color:#fff;border:1px solid rgba(227,173,53,.65);border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 7px 18px rgba(7,21,47,.16)}
+.app-home-hero h1{margin:0;font-size:1.45rem}.app-home-hero p{margin:6px 0 0;color:#dbe5f2;font-size:.78rem;line-height:1.4}
+.mode-grid{display:grid;gap:10px}
+.mode-card{border:1px solid #d7e0ec;background:#fff;border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px;box-shadow:0 3px 10px rgba(11,31,66,.05);cursor:pointer;text-align:left;width:100%}
+.mode-icon{width:54px;height:54px;border-radius:14px;display:grid;place-items:center;font-size:1.65rem;flex:0 0 54px;background:#eff6ff}
+.mode-card h2{margin:0;font-size:1rem;color:#0b1f42}.mode-card p{margin:4px 0 0;color:#64748b;font-size:.73rem;line-height:1.35}.mode-arrow{margin-left:auto;font-size:1.3rem;color:#64748b}
+.home-profile{margin-top:12px;background:#fff;border:1px solid #dce4ef;border-radius:16px;padding:13px;display:flex;align-items:center;gap:10px}
+.profile-avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;background:#e2e8f0;border:2px solid #e3ad35;display:block}
+.profile-placeholder{display:grid;place-items:center;font-size:1.5rem}
+.home-profile h3{margin:0;font-size:.9rem;color:#0b1f42}.home-profile p{margin:3px 0 0;color:#64748b;font-size:.7rem}
+.home-profile button{margin-left:auto;border:1px solid #cbd5e1;background:#f8fafc;color:#0b1f42;border-radius:9px;padding:7px 9px;font-weight:800}
+.home-ad{margin-top:12px;background:linear-gradient(135deg,#fff8e6,#eff6ff);border:1px solid #d9e3ef;border-radius:16px;padding:12px}
+.home-ad-head{display:flex;align-items:center;gap:8px}.ad-tag{background:#f59e0b;color:#fff;font-size:.6rem;font-weight:900;padding:3px 6px;border-radius:5px}.home-ad h3{margin:0;font-size:.88rem;color:#0b1f42}.home-ad p{margin:5px 0 9px;font-size:.7rem;color:#64748b}
+.home-ad-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.home-ad-actions button{border:1px solid #cbd5e1;background:#fff;border-radius:9px;padding:9px 6px;font-weight:800;font-size:.72rem;color:#0b1f42}.home-ad-actions .primary{background:#0b1f42;color:#fff;border-color:#0b1f42}
+.team-view{max-width:480px;margin:0 auto;padding:14px 0 28px}
+.team-head{background:linear-gradient(135deg,#07152f,#163d70);color:#fff;border-radius:18px;padding:16px;margin-bottom:12px;border:1px solid rgba(227,173,53,.65)}
+.team-head h1{margin:0;font-size:1.25rem}.team-head p{margin:4px 0 0;color:#dbe5f2;font-size:.75rem}
+.team-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px}.team-stat{background:rgba(255,255,255,.11);border-radius:10px;padding:8px;text-align:center}.team-stat b{display:block;font-size:1rem}.team-stat span{font-size:.6rem;color:#dbe5f2}
+.team-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}.team-actions button{padding:11px;border-radius:10px;border:1px solid #dce4ef;background:#fff;font-weight:800;color:#0b1f42}.team-actions .primary{background:#0b1f42;color:#fff;border-color:#0b1f42}
+.team-list{display:grid;gap:8px}.worker-card{background:#fff;border:1px solid #dce4ef;border-radius:14px;padding:10px;display:flex;align-items:center;gap:10px}.worker-card img{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid #e3ad35;background:#e2e8f0}.worker-card h3{margin:0;font-size:.82rem;color:#0b1f42}.worker-card p{margin:3px 0 0;font-size:.68rem;color:#64748b}.worker-card .worker-arrow{margin-left:auto;color:#64748b;font-size:1.1rem}
+.team-empty{text-align:center;background:#fff;border:1px dashed #cbd5e1;border-radius:14px;padding:22px 12px;color:#64748b;font-size:.78rem}
+.profile-modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.68);display:none;align-items:center;justify-content:center;padding:14px;z-index:400}
+.profile-modal{background:#fff;width:100%;max-width:390px;border-radius:18px;padding:16px;max-height:92vh;overflow:auto}
+.profile-photo-wrap{text-align:center;margin-bottom:12px}.profile-photo-lg{width:88px;height:88px;border-radius:50%;object-fit:cover;background:#e2e8f0;border:3px solid #e3ad35}.photo-buttons{display:flex;gap:7px;justify-content:center;margin-top:8px}.photo-buttons button{border:1px solid #cbd5e1;background:#f8fafc;border-radius:8px;padding:7px 9px;font-weight:800;font-size:.72rem}
+.profile-fields{display:grid;gap:8px}.profile-fields label{display:block;font-size:.7rem;font-weight:800;color:#64748b;margin-bottom:3px}.profile-fields input,.profile-fields select{width:100%;padding:9px;border:1.5px solid #cbd5e1;border-radius:9px;font-weight:700}
+.profile-actions{display:flex;gap:8px;margin-top:12px}.profile-actions button{flex:1;padding:10px;border:0;border-radius:9px;font-weight:800}.profile-actions .save{background:#166534;color:#fff}.profile-actions .cancel{background:#e2e8f0}
+.worker-detail-panel{display:none;background:#fff;border:1px solid #dce4ef;border-radius:16px;padding:14px;margin-bottom:10px}
+.worker-detail-top{display:flex;align-items:center;gap:10px}.worker-detail-top img{width:62px;height:62px;border-radius:50%;object-fit:cover;border:2px solid #e3ad35}.worker-detail-top h2{margin:0;font-size:.95rem;color:#0b1f42}.worker-detail-top p{margin:3px 0;color:#64748b;font-size:.7rem}
+.worker-feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.worker-feature{padding:12px;border-radius:11px;border:1px solid #dce4ef;background:#f8fafc;text-align:center;font-weight:800;font-size:.76rem;color:#0b1f42}
+@media(max-width:360px){.app-home{padding:10px 0 22px}.home-ad-actions{grid-template-columns:1fr}.team-stats{gap:5px}}
+
 </style>
 </head>
-<body><header><div class='wrap brandhead'><div class="brandmark" aria-label="Gulf Duty & Salary Pro logo"><img src="./icon-192.png" alt="Gulf Duty & Salary Pro" width="68" height="68" style="width:100%;height:100%;object-fit:contain;display:block"></div><div class='brandcopy'><h1>Gulf Duty &amp; Salary <span>Pro</span></h1><p>Work Smart · Calculate Easy · Plan Better</p></div></div></header>
+<body class="app-home-mode">
+<div class="app-modebar" id="appModeBar">
+  <div class="app-modebar-inner"><button type="button" onclick="showAppHome()">⌂ Home</button><span class="mode-label" id="modeBarLabel">Gulf Salary Calculator</span><span style="width:58px"></span></div>
+</div>
+
+<section class="app-home" id="appHome">
+  <div class="app-home-hero">
+    <div style="font-size:.65rem;font-weight:900;color:#f5ce71;letter-spacing:.5px">GULF SALARY CALCULATOR</div>
+    <h1>Work • Attendance • Salary</h1>
+    <p>Choose how you want to use the app. Your existing salary and attendance records stay on this device.</p>
+  </div>
+
+  <div class="mode-grid">
+    <button type="button" class="mode-card" onclick="openAppMode('individual')">
+      <div class="mode-icon">👤</div><div><h2>Individual</h2><p>My salary, attendance, OT, leave and work notes</p></div><div class="mode-arrow">›</div>
+    </button>
+    <button type="button" class="mode-card" onclick="openAppMode('team')">
+      <div class="mode-icon">👥</div><div><h2>Supervisor / Foreman</h2><p>Manage multiple workers by name and Employee ID</p></div><div class="mode-arrow">›</div>
+    </button>
+  </div>
+
+  <div class="home-profile" id="homeProfileCard">
+    <div class="profile-avatar profile-placeholder" id="homeProfilePhoto">👤</div>
+    <div><h3 id="homeProfileName">Your Profile</h3><p id="homeProfileMeta">Add your name, Employee ID and photo</p></div>
+    <button type="button" onclick="openProfileEditor()">Edit</button>
+  </div>
+
+  <div class="home-ad">
+    <div class="home-ad-head"><span class="ad-tag">ADVERTISEMENT</span><h3>Share Gulf Salary Calculator</h3></div>
+    <p>Share the app with another worker or scan the QR code to open the app and download the Android version.</p>
+    <div class="home-ad-actions">
+      <button type="button" class="primary" onclick="openSharePanel()">🔗 Share App</button>
+      <button type="button" onclick="openSharePanel()">▣ Scan / QR Code</button>
+    </div>
+  </div>
+</section>
+
+<section class="team-view" id="teamView">
+  <div class="team-head">
+    <h1>👥 My Team</h1>
+    <p>Supervisor / Foreman — manage your workers in one place</p>
+    <div class="team-stats">
+      <div class="team-stat"><b id="teamCount">0</b><span>Workers</span></div>
+      <div class="team-stat"><b id="teamActive">0</b><span>Active</span></div>
+      <div class="team-stat"><b id="teamMonth">—</b><span>Month</span></div>
+    </div>
+  </div>
+  <div id="teamDetail" class="worker-detail-panel"></div>
+  <div id="teamListPanel">
+    <div class="team-actions">
+      <button type="button" class="primary" onclick="openWorkerEditor()">＋ Add Worker</button>
+      <button type="button" onclick="showAppHome()">⌂ Main Menu</button>
+    </div>
+    <div id="teamList" class="team-list"></div>
+  </div>
+</section>
+
+<div class="profile-modal-bg" id="profileModal" onclick="if(event.target===this)closeProfileEditor()">
+  <div class="profile-modal">
+    <h2 style="margin:0 0 10px;color:#0b1f42;font-size:1rem" id="profileModalTitle">Your Profile</h2>
+    <div class="profile-photo-wrap">
+      <img id="profilePhotoPreview" class="profile-photo-lg" alt="Profile photo" src="">
+      <div class="photo-buttons">
+        <button type="button" onclick="document.getElementById('profilePhotoInput').click()">📷 Add / Change Photo</button>
+        <button type="button" onclick="removeProfilePhoto()">🗑 Remove</button>
+      </div>
+      <input id="profilePhotoInput" type="file" accept="image/*" style="display:none" onchange="handleProfilePhoto(event)">
+    </div>
+    <div class="profile-fields">
+      <div><label>Name</label><input id="profileName" type="text" maxlength="80" placeholder="Your name"></div>
+      <div><label>Employee ID</label><input id="profileEmployeeId" type="text" maxlength="60" placeholder="Employee ID"></div>
+      <div><label>Designation</label><input id="profileDesignation" type="text" maxlength="80" placeholder="Designation"></div>
+      <div><label>Company (optional)</label><input id="profileCompany" type="text" maxlength="100" placeholder="Company / Contractor"></div>
+    </div>
+    <div class="profile-actions"><button type="button" class="cancel" onclick="closeProfileEditor()">Cancel</button><button type="button" class="save" onclick="saveProfile()">Save Profile</button></div>
+  </div>
+</div>
+
+<div class="profile-modal-bg" id="workerModal" onclick="if(event.target===this)closeWorkerEditor()">
+  <div class="profile-modal">
+    <h2 style="margin:0 0 10px;color:#0b1f42;font-size:1rem">Add Worker</h2>
+    <div class="profile-photo-wrap">
+      <img id="workerPhotoPreview" class="profile-photo-lg" alt="Worker photo" src="">
+      <div class="photo-buttons"><button type="button" onclick="document.getElementById('workerPhotoInput').click()">📷 Add Photo</button><button type="button" onclick="removeWorkerPhoto()">🗑 Remove</button></div>
+      <input id="workerPhotoInput" type="file" accept="image/*" style="display:none" onchange="handleWorkerPhoto(event)">
+    </div>
+    <div class="profile-fields">
+      <div><label>Worker Name</label><input id="workerName" type="text" maxlength="80" placeholder="Worker name"></div>
+      <div><label>Employee ID</label><input id="workerId" type="text" maxlength="60" placeholder="Employee ID"></div>
+      <div><label>Designation</label><input id="workerDesignation" type="text" maxlength="80" placeholder="Designation"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label>Basic Salary</label><input id="workerBasic" type="number" min="0" step="0.001" placeholder="0"></div><div><label>Allowance</label><input id="workerAllowance" type="number" min="0" step="0.001" placeholder="0"></div></div>
+      <div><label>Currency</label><select id="workerCurrency"><option value="KWD">KWD — Kuwait</option><option value="SAR">SAR — Saudi</option><option value="AED">AED — UAE</option><option value="QAR">QAR — Qatar</option><option value="OMR">OMR — Oman</option><option value="BHD">BHD — Bahrain</option></select></div>
+    </div>
+    <div class="profile-actions"><button type="button" class="cancel" onclick="closeWorkerEditor()">Cancel</button><button type="button" class="save" onclick="saveWorker()">Save Worker</button></div>
+  </div>
+</div>
+<header><div class='wrap brandhead'><div class="brandmark" aria-label="Gulf Duty & Salary Pro logo"><img src="./icon-192.png" alt="Gulf Duty & Salary Pro" width="68" height="68" style="width:100%;height:100%;object-fit:contain;display:block"></div><div class='brandcopy'><h1>Gulf Duty &amp; Salary <span>Pro</span></h1><p>Work Smart · Calculate Easy · Plan Better</p></div></div></header>
 <div class="wrap">
   <div class="hdr">
     <div>
@@ -567,6 +702,10 @@ function printDocument(title,bodyHtml){
   <script>window.onload=()=>setTimeout(()=>{try{window.focus()}catch(e){}},250);<\/script>
 
 
+<script>
+// Keep the new profile data synchronized with the existing employee fields without changing legacy storage keys.
+document.addEventListener("DOMContentLoaded",()=>{const p=readJsonKey(APP_PROFILE_KEY,{});const n=document.getElementById("employeeNameInp"),id=document.getElementById("employeeIdInp");if(n&&p.name)n.value=p.name;if(id&&p.employeeId)id.value=p.employeeId;});
+</script>
 </body></html>`);
   win.document.close();
 }
