@@ -216,6 +216,10 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
   <section class="card notes-card" id="workNotesSummary">
     <div class="sec-hdr"><span class="sec-title">📝 Daily Work Notes</span><span class="rate-pill" id="notesCountBadge">0 notes</span></div>
     <div class="note">Save important work events against the exact date — site transfer, OT, permit delay, supervisor instruction, missing OT payment, work stop, manpower issue, etc.</div>
+    <div class="notes-addbar" style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;margin:10px 0">
+      <div class="inp"><label>Date for new note</label><input id="newNoteDate" type="date"></div>
+      <button type="button" class="footer-action primary" style="padding:10px 14px;white-space:nowrap" onclick="openNewWorkNote()">＋ Add Work Note</button>
+    </div>
     <div class="notes-toolbar">
       <input id="notesSearch" class="notes-search" type="search" placeholder="Search notes: OT, transfer, permit…" oninput="renderNotesSummary()">
       <select id="notesStatusFilter" class="notes-search" style="max-width:125px" onchange="renderNotesSummary()"><option value="all">All</option><option value="normal">Normal</option><option value="pending">⚠️ Pending</option><option value="resolved">✅ Resolved</option></select>
@@ -291,6 +295,7 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
 let dt=new Date(),y=dt.getFullYear(),m=dt.getMonth(),selKey=null,tSt='present',qMode='edit';
 let db=JSON.parse(localStorage.getItem('gulf_att_v5')||'{}');
 let workNotes=JSON.parse(localStorage.getItem('gulf_work_notes_v1')||'{}');
+const newNoteDateEl=document.getElementById('newNoteDate');if(newNoteDateEl){const now=new Date();newNoteDateEl.value=now.toISOString().slice(0,10);}
 let activeNoteDate=null,activeNoteId=null;
 function persistWorkNotes(){localStorage.setItem('gulf_work_notes_v1',JSON.stringify(workNotes));}
 function notesForDate(key){return Array.isArray(workNotes[key])?workNotes[key]:[];}
@@ -308,7 +313,7 @@ function openNoteEditor(key,date,id=null){
   document.getElementById('noteEditorBg').style.display='flex';
   setTimeout(()=>document.getElementById('noteText').focus(),50);
 }
-function openAnotherWorkNote(){if(!activeNoteDate)return;const key=activeNoteDate;const d=document.getElementById('noteEditorDate').innerText.replace('Date: ','');openNoteEditor(key,d,null);}
+function openAnotherWorkNote(){if(!activeNoteDate)return;const key=activeNoteDate;const d=document.getElementById('noteEditorDate').innerText.replace('Date: ','');openNoteEditor(key,d,null);}function openNewWorkNote(){const el=document.getElementById('newNoteDate');const chosen=el&&el.value?el.value:null;const d=chosen?new Date(chosen+'T12:00:00'):new Date();const key=chosen?chosen.replace(/-0/g,'-'):(d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate());const label=d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();openNoteEditor(key,label,null);}
 function closeNoteEditor(){document.getElementById('noteEditorBg').style.display='none';activeNoteDate=null;activeNoteId=null;}
 function saveWorkNote(){
   const textValue=document.getElementById('noteText').value.trim(); if(!textValue){alert('Please write something in the note.');return;}
