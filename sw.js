@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'gulf-salary-app-v2026-11-21-5';
+const CACHE_NAME = 'gulf-salary-app-v2026-11-21-6';
 
 const APP_FILES = [
   './',
