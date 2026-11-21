@@ -1215,9 +1215,52 @@ function saveWorker(){const name=document.getElementById('workerName').value.tri
 function renderTeam(){const team=getTeam(),list=document.getElementById('teamList');if(!list)return;document.getElementById('teamCount').innerText=team.length;document.getElementById('teamActive').innerText=team.filter(w=>w.active!==false).length;document.getElementById('teamMonth').innerText=new Date().toLocaleString('en-US',{month:'short',year:'numeric'});if(!team.length){list.innerHTML='<div class="team-empty">No workers added yet.<br>Tap <b>＋ Add Worker</b> to create your first worker profile.</div>';return;}list.innerHTML='';team.forEach(w=>{const card=document.createElement('div');card.className='worker-card';const img=document.createElement('img');img.src=w.photo||safeImagePlaceholder();img.alt='';const body=document.createElement('div');body.style.flex='1';body.innerHTML='<h3></h3><p></p>';body.querySelector('h3').innerText=w.name;body.querySelector('p').innerText=[w.employeeId||'No Employee ID',w.designation||'No designation'].join(' • ');const arrow=document.createElement('div');arrow.className='worker-arrow';arrow.innerText='›';card.append(img,body,arrow);card.onclick=()=>openWorkerDetail(w.id);list.appendChild(card);});}
 function openWorkerDetail(workerId){const w=getTeam().find(x=>x.id===workerId);if(!w)return;const panel=document.getElementById('teamDetail'),listPanel=document.getElementById('teamListPanel');panel.innerHTML='<div class="worker-detail-top"><img src="" alt=""><div><h2></h2><p></p></div></div><div class="worker-feature-grid"><div class="worker-feature">📅<br>Attendance</div><div class="worker-feature">💰<br>Salary</div><div class="worker-feature">⏱️<br>OT</div><div class="worker-feature">🏖️<br>Leave</div><div class="worker-feature">📝<br>Work Notes</div><div class="worker-feature">📊<br>Monthly Summary</div></div><div style="margin-top:10px;display:flex;gap:8px"><button type="button" class="footer-action" onclick="closeWorkerDetail()">← Back to Workers</button><button type="button" class="footer-action primary" onclick="openWorkerEditor(\''+w.id+'\')">✏️ Edit Worker</button></div>';panel.querySelector('img').src=w.photo||safeImagePlaceholder();panel.querySelector('h2').innerText=w.name;panel.querySelector('p').innerText=[w.employeeId?'Emp ID: '+w.employeeId:'No Employee ID',w.designation||'',w.basic+' '+w.currency+' basic'].filter(Boolean).join(' • ');panel.style.display='block';listPanel.style.display='none';}
 function closeWorkerDetail(){document.getElementById('teamDetail').style.display='none';document.getElementById('teamListPanel').style.display='block';}
-function openAppMode(mode){appMode=mode;document.getElementById('appHome').style.display='none';document.getElementById('teamView').style.display='none';document.getElementById('appModeBar').style.display='block';document.body.classList.remove('app-home-mode','app-team-mode');if(mode==='team'){document.body.classList.add('app-team-mode');document.getElementById('teamView').style.display='block';document.getElementById('modeBarLabel').innerText='Supervisor / Foreman';renderTeam();}else{document.getElementById('modeBarLabel').innerText='Individual — My Salary';loadAppProfile();try{if(typeof render==='function')render();}catch(e){}}window.scrollTo(0,0);}
-function showAppHome(){appMode='home';document.body.classList.add('app-home-mode');document.body.classList.remove('app-team-mode');document.getElementById('appModeBar').style.display='none';document.getElementById('appHome').style.display='block';document.getElementById('teamView').style.display='none';document.querySelector('body>header').style.display='none';document.querySelector('body>.wrap').style.display='none';loadAppProfile();window.scrollTo(0,0);}
-document.addEventListener('DOMContentLoaded',()=>{loadAppProfile();showAppHome();});
+function setLegacyInterfaceVisible(visible){
+  const header=document.querySelector('body>header'),wrap=document.querySelector('body>.wrap');
+  if(header)header.style.setProperty('display',visible?'block':'none','important');
+  if(wrap)wrap.style.setProperty('display',visible?'block':'none','important');
+}
+function openAppMode(mode,push=true){
+  appMode=mode;
+  document.getElementById('appHome').style.display='none';
+  document.getElementById('teamView').style.display='none';
+  document.getElementById('appModeBar').style.display='block';
+  document.body.classList.remove('app-home-mode','app-team-mode');
+  setLegacyInterfaceVisible(mode==='individual');
+  if(mode==='team'){
+    document.body.classList.add('app-team-mode');
+    document.getElementById('teamView').style.display='block';
+    document.getElementById('modeBarLabel').innerText='Supervisor / Foreman';
+    renderTeam();
+  }else{
+    document.getElementById('modeBarLabel').innerText='Individual — My Salary';
+    loadAppProfile();
+    try{if(typeof render==='function')render();}catch(e){}
+  }
+  if(push)history.pushState({gulfMode:mode},'',location.href.split('#')[0]+'#'+mode);
+  window.scrollTo(0,0);
+}
+function showAppHome(replace=true){
+  appMode='home';
+  document.body.classList.add('app-home-mode');
+  document.body.classList.remove('app-team-mode');
+  document.getElementById('appModeBar').style.display='none';
+  document.getElementById('appHome').style.display='block';
+  document.getElementById('teamView').style.display='none';
+  setLegacyInterfaceVisible(false);
+  loadAppProfile();
+  if(replace)history.replaceState({gulfMode:'home'},'',location.href.split('#')[0]+'#home');
+  window.scrollTo(0,0);
+}
+window.addEventListener('popstate',function(){
+  if(appMode!=='home'){showAppHome(true);}
+});
+document.addEventListener('DOMContentLoaded',()=>{
+  loadAppProfile();
+  if(location.hash==='#individual')openAppMode('individual',false);
+  else if(location.hash==='#team')openAppMode('team',false);
+  else showAppHome(true);
+});
 </script>
 </body>
 </html>
