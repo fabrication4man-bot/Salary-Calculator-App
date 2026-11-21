@@ -779,7 +779,13 @@ function render(){
     const statusLabel=(gccHoliday && (!r.status || r.status==='none'))?'HOL':(labels[r.status]||'-');
     c.innerHTML=`<span>${d}</span><span class="sub">${statusLabel}</span>`;
     const dayNotes=notesForDate(k);
-    if(dayNotes.length){const ni=document.createElement('span');ni.className='note-indicator';ni.innerText='📝';ni.title=dayNotes.length>1?dayNotes.length+' work notes':'View work note';ni.onclick=(ev)=>{ev.stopPropagation();openNotesForDate(k,`${d}/${m+1}/${y}`)};c.appendChild(ni);}
+    const ni=document.createElement('span');
+    ni.className='note-indicator';
+    ni.innerText='📝';
+    ni.title=dayNotes.length>1?dayNotes.length+' work notes':(dayNotes.length===1?'View work note':'Add work note');
+    ni.setAttribute('aria-label',ni.title);
+    ni.onclick=(ev)=>{ev.preventDefault();ev.stopPropagation();openNotesForDate(k,`${d}/${m+1}/${y}`);};
+    c.appendChild(ni);
     if(gccHoliday)c.innerHTML+=`<span class="holiday-name">${gccHoliday.name.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span>`;
     if(gccHoliday)c.title=gccHoliday.name+(gccHoliday.estimated?' — estimated; verify official announcement':'');
     if(r.hours>0&&r.status!=='absent'&&r.status!=='none'&&r.status!=='sick')c.innerHTML+=`<span class="otb">+${r.hours}h</span>`;
