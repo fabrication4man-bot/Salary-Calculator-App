@@ -1134,11 +1134,25 @@ async function loadFxRate(){
   document.getElementById('rNetInr').innerText='Loading rate…';
   updEl.innerText='Loading currency rates for the selected salary currency.';
   try{
-    const response=await fetch('https://open.er-api.com/v6/latest/'+encodeURIComponent(cur),{cache:'no-store'});
-    if(!response.ok) throw new Error('Rate service unavailable');
-    const data=await response.json();
-    if(data.result!=='success'||!data.rates||!Number.isFinite(Number(data.rates.INR))) throw new Error('Invalid exchange rate');
-    fxRatesByCode=data.rates;fxRate=Number(data.rates.INR);fxUpdatedAt=data.time_last_update_utc||'Latest available';
+    let data=null, lastErr=null;
+    const endpoints=[
+      'https://open.er-api.com/v6/latest/'+encodeURIComponent(cur),
+      'https://api.exchangerate-api.com/v4/latest/'+encodeURIComponent(cur)
+    ];
+    for(const endpoint of endpoints){
+      try{
+        const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),8000);
+        const response=await fetch(endpoint,{cache:'no-store',signal:ctl.signal});
+        clearTimeout(timer);
+        if(!response.ok)throw new Error('HTTP '+response.status);
+        const json=await response.json();
+        if(json&&json.rates&&Number.isFinite(Number(json.rates.INR))){data=json;break;}
+        throw new Error('Invalid rate data');
+      }catch(e){lastErr=e;}
+    }
+    if(!data)throw (lastErr||new Error('Rate service unavailable'));
+    fxRatesByCode=data.rates;fxRate=Number(data.rates.INR);
+    fxUpdatedAt=data.time_last_update_utc||data.time_last_update||'Latest available';
     try{localStorage.setItem(fxCacheKey,JSON.stringify({currency:cur,rates:fxRatesByCode,rate:fxRate,updated:fxUpdatedAt,ts:Date.now()}));}catch(e){}
     populateTargetCurrencies(fxRatesByCode);
     if(rateEl)rateEl.innerText='1 '+cur+' = ₹ '+fxRate.toLocaleString('en-IN',{maximumFractionDigits:4});
@@ -1387,7 +1401,7 @@ function openMonthDetail(year,month,push=true){
   const wrap=document.querySelector('body>.wrap');
   if(wrap)wrap.style.setProperty('display','block','important');
   const header=document.querySelector('body>header');
-  if(header)header.style.setProperty('display','block','important');
+  if(header)header.style.setProperty('display','none','important');
   try{if(typeof render==='function')render();}catch(e){}
   const cal=document.getElementById('calGrid');
   if(cal)cal.scrollIntoView({behavior:'smooth',block:'start'});
