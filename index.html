@@ -121,6 +121,25 @@ button{transition:filter .15s ease,transform .15s ease}
 button:active{filter:brightness(.96);transform:translateY(1px)}
 @media(max-width:360px){body{padding:8px}.hdr{padding:12px}.badge{min-width:82px;padding:7px 9px}.grid3{gap:6px}.card{padding:11px}.brandmark{width:58px;height:58px;flex-basis:58px}.brandcopy h1{font-size:19px}}
 
+
+/* Daily Work Notes */
+.note-indicator{position:absolute;right:2px;top:2px;font-size:.62rem;line-height:1;z-index:2;cursor:pointer;background:#fff;border-radius:5px;padding:1px 2px;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.cell{position:relative}
+.notes-card{margin-top:12px}
+.notes-toolbar{display:flex;gap:7px;align-items:center;margin:8px 0;flex-wrap:wrap}
+.notes-search{flex:1;min-width:150px;padding:9px 10px;border:1.5px solid #cbd5e1;border-radius:10px;font-weight:700}
+.notes-list{display:grid;gap:7px}
+.note-item{border:1px solid #e2e8f0;border-radius:10px;padding:9px;background:#f8fafc;cursor:pointer}
+.note-item-head{display:flex;justify-content:space-between;gap:8px;font-weight:800;font-size:.78rem}
+.note-preview{font-size:.76rem;color:#475569;line-height:1.35;margin-top:4px;white-space:pre-wrap}
+.note-status{font-size:.65rem;padding:3px 6px;border-radius:6px;font-weight:800;white-space:nowrap}
+.note-status.normal{background:#e2e8f0;color:#334155}.note-status.pending{background:#fef3c7;color:#92400e}.note-status.resolved{background:#dcfce7;color:#166534}
+.notes-empty{font-size:.75rem;color:#64748b;padding:8px 0}
+.note-editor-bg{position:fixed;inset:0;background:rgba(15,23,42,.68);display:none;align-items:center;justify-content:center;padding:14px;z-index:250}
+.note-editor{background:#fff;width:100%;max-width:390px;border-radius:16px;padding:16px;max-height:92vh;overflow:auto}
+.note-editor textarea{width:100%;min-height:145px;resize:vertical;border:1.5px solid #cbd5e1;border-radius:10px;padding:10px;font-size:.85rem;line-height:1.4}
+.note-editor select{width:100%;padding:9px;border:1.5px solid #cbd5e1;border-radius:10px;font-weight:700;background:#fff}
+.note-actions{display:flex;gap:8px;margin-top:10px}.note-actions button{flex:1;padding:10px;border:0;border-radius:10px;font-weight:800;cursor:pointer}.note-save{background:#166534;color:#fff}.note-cancel{background:#e2e8f0}.note-delete{background:#fee2e2;color:#b91c1c}
 </style>
 </head>
 <body><header><div class='wrap brandhead'><div class="brandmark" aria-label="Gulf Duty & Salary Pro logo"><img src="./icon-192.png" alt="Gulf Duty & Salary Pro" width="68" height="68" style="width:100%;height:100%;object-fit:contain;display:block"></div><div class='brandcopy'><h1>Gulf Duty &amp; Salary <span>Pro</span></h1><p>Work Smart · Calculate Easy · Plan Better</p></div></div></header>
@@ -195,6 +214,16 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
     <div class="tot" style="background:#eff6ff;border-color:#93c5fd;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><span>Convert Net Salary To:</span><select id="targetCurrencyInp" aria-label="Convert salary to currency" onchange="saveTargetCurrency()" style="max-width:150px;padding:7px;border:1px solid #93c5fd;border-radius:8px;background:#fff;color:#1d4ed8;font-weight:800"><option value="INR">INR — Indian Rupee</option></select><b id="rNetInr" style="color:#1d4ed8">Loading…</b></div>
     <div class="note" id="sickNote">Kuwait sick-leave estimate: first 15 days full pay, next 10 at 75%, next 10 at 50%, next 10 at 25%, next 30 unpaid. The app counts marked sick days by calendar year.</div>
   </div>
+  <section class="card notes-card" id="workNotesSummary">
+    <div class="sec-hdr"><span class="sec-title">📝 Daily Work Notes</span><span class="rate-pill" id="notesCountBadge">0 notes</span></div>
+    <div class="note">Save important work events against the exact date — site transfer, OT, permit delay, supervisor instruction, missing OT payment, work stop, manpower issue, etc.</div>
+    <div class="notes-toolbar">
+      <input id="notesSearch" class="notes-search" type="search" placeholder="Search notes: OT, transfer, permit…" oninput="renderNotesSummary()">
+      <select id="notesStatusFilter" class="notes-search" style="max-width:125px" onchange="renderNotesSummary()"><option value="all">All</option><option value="normal">Normal</option><option value="pending">⚠️ Pending</option><option value="resolved">✅ Resolved</option></select>
+    </div>
+    <div id="notesList" class="notes-list"></div>
+  </section>
+
   <div class="app-footer">
     <h2>App Actions</h2>
     <p>Share one common app link or QR code. Anyone opening it can use the web app or download the Android APK here.</p>
@@ -247,10 +276,77 @@ button:active{filter:brightness(.96);transform:translateY(1px)}
     <p class="share-foot">QR code and app link open the common app page. The direct APK option links to the published Android release.</p>
   </div>
 </div>
+<div class="note-editor-bg" id="noteEditorBg"><div class="note-editor">
+  <div style="font-weight:900;font-size:1.05rem" id="noteEditorTitle">📝 Daily Work Note</div>
+  <div class="note" id="noteEditorDate" style="margin-bottom:10px"></div>
+  <label style="display:block;font-size:.72rem;font-weight:800;color:#64748b;margin-bottom:4px">Status</label>
+  <select id="noteStatus"><option value="normal">Normal</option><option value="pending">⚠️ Pending</option><option value="resolved">✅ Resolved</option></select>
+  <label style="display:block;font-size:.72rem;font-weight:800;color:#64748b;margin:10px 0 4px">Work note / event</label>
+  <textarea id="noteText" maxlength="3000" placeholder="Example: Today I was transferred from Alzour to Subiya. OT was planned for 4 hours but only 2 hours were approved."></textarea>
+  <div class="note-actions"><button class="note-cancel" type="button" onclick="closeNoteEditor()">Cancel</button><button class="note-save" type="button" onclick="saveWorkNote()">Save Note</button></div>
+  <div class="note-actions" id="noteDeleteRow" style="display:none"><button class="note-delete" type="button" onclick="deleteWorkNote()">🗑️ Delete This Note</button></div>
+</div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 <script>
 let dt=new Date(),y=dt.getFullYear(),m=dt.getMonth(),selKey=null,tSt='present',qMode='edit';
 let db=JSON.parse(localStorage.getItem('gulf_att_v5')||'{}');
+let workNotes=JSON.parse(localStorage.getItem('gulf_work_notes_v1')||'{}');
+let activeNoteDate=null,activeNoteId=null;
+function persistWorkNotes(){localStorage.setItem('gulf_work_notes_v1',JSON.stringify(workNotes));}
+function notesForDate(key){return Array.isArray(workNotes[key])?workNotes[key]:[];}
+function noteStatusLabel(s){return s==='pending'?'⚠️ Pending':s==='resolved'?'✅ Resolved':'Normal';}
+function notePreview(text){return String(text||'').replace(/\\s+/g,' ').trim().slice(0,110)+(String(text||'').trim().length>110?'…':'');}
+function openNoteEditor(key,date,id=null){
+  activeNoteDate=key;activeNoteId=id;
+  const list=notesForDate(key), item=id?list.find(n=>n.id===id):null;
+  document.getElementById('noteEditorTitle').innerText=item?'✏️ Edit Daily Work Note':'📝 Daily Work Note';
+  document.getElementById('noteEditorDate').innerText='Date: '+date;
+  document.getElementById('noteText').value=item?item.text:'';
+  document.getElementById('noteStatus').value=item?.status||'normal';
+  document.getElementById('noteDeleteRow').style.display=item?'flex':'none';
+  document.getElementById('noteEditorBg').style.display='flex';
+  setTimeout(()=>document.getElementById('noteText').focus(),50);
+}
+function closeNoteEditor(){document.getElementById('noteEditorBg').style.display='none';activeNoteDate=null;activeNoteId=null;}
+function saveWorkNote(){
+  const textValue=document.getElementById('noteText').value.trim(); if(!textValue){alert('Please write something in the note.');return;}
+  const status=document.getElementById('noteStatus').value||'normal'; const now=new Date().toISOString();
+  if(!Array.isArray(workNotes[activeNoteDate]))workNotes[activeNoteDate]=[];
+  if(activeNoteId){const item=workNotes[activeNoteDate].find(n=>n.id===activeNoteId);if(item){item.text=textValue;item.status=status;item.updatedAt=now;}}
+  else workNotes[activeNoteDate].push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),text:textValue,status,createdAt:now,updatedAt:now});
+  persistWorkNotes();closeNoteEditor();render();renderNotesSummary();
+}
+function deleteWorkNote(){
+  if(!activeNoteDate||!activeNoteId)return;
+  if(!confirm('Delete this work note?'))return;
+  workNotes[activeNoteDate]=(workNotes[activeNoteDate]||[]).filter(n=>n.id!==activeNoteId);
+  if(!workNotes[activeNoteDate].length)delete workNotes[activeNoteDate];
+  persistWorkNotes();closeNoteEditor();render();renderNotesSummary();
+}
+function openNotesForDate(key,date){
+  const list=notesForDate(key);
+  if(list.length===1){openNoteEditor(key,date,list[0].id);return;}
+  if(list.length>1){renderNotesSummary();document.getElementById('workNotesSummary').scrollIntoView({behavior:'smooth',block:'start'});return;}
+  openNoteEditor(key,date);
+}
+function renderNotesSummary(){
+  const listEl=document.getElementById('notesList');if(!listEl)return;
+  const q=(document.getElementById('notesSearch')?.value||'').trim().toLowerCase();
+  const sf=document.getElementById('notesStatusFilter')?.value||'all';
+  const items=[];
+  Object.keys(workNotes).forEach(key=>notesForDate(key).forEach(n=>{if(sf!=='all'&&n.status!==sf)return;if(q&&!((n.text||'').toLowerCase().includes(q)||key.includes(q)))return;items.push({key,n});}));
+  items.sort((a,b)=>a.key.localeCompare(b.key));
+  const monthPrefix=`${y}-${m+1}-`.padStart(8,'0');
+  const monthItems=items.filter(x=>x.key.startsWith(`${y}-${m+1}-`));
+  const shown=monthItems.length?monthItems:items;
+  document.getElementById('notesCountBadge').innerText=Object.values(workNotes).reduce((s,a)=>s+a.length,0)+' notes';
+  if(!shown.length){listEl.innerHTML='<div class="notes-empty">No notes found for this month/search.</div>';return;}
+  listEl.innerHTML=shown.map(({key,n})=>{
+    const parts=key.split('-');const label=parts[2]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(parts[1])-1]+' '+parts[0];
+    return `<div class="note-item" onclick="openNoteEditor('${key}','${label.replace(/'/g,"\\'")}','${n.id}')"><div class="note-item-head"><span>${label}</span><span class="note-status ${n.status}">${noteStatusLabel(n.status)}</span></div><div class="note-preview">${String(n.text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div></div>`;
+  }).join('');
+}
+
 let cfg=JSON.parse(localStorage.getItem('gulf_cfg_v5')||'{"basic":0,"allow":0,"base":26,"mode":"earned","currency":"KWD"}');
 // One-time migration: remove the old demo default (210 KD) so the user enters their own salary.
 if(!localStorage.getItem('gulf_cfg_zero_default_v1')){if(Number(cfg.basic)===210){cfg.basic=0;}localStorage.setItem('gulf_cfg_zero_default_v1','1');localStorage.setItem('gulf_cfg_v5',JSON.stringify(cfg));}
@@ -679,6 +775,8 @@ function render(){
     let labels={present:'P',absent:'A',friday:'FRI',holiday:'HOL',sick:'SL',none:'-' };
     const statusLabel=(gccHoliday && (!r.status || r.status==='none'))?'HOL':(labels[r.status]||'-');
     c.innerHTML=`<span>${d}</span><span class="sub">${statusLabel}</span>`;
+    const dayNotes=notesForDate(k);
+    if(dayNotes.length){const ni=document.createElement('span');ni.className='note-indicator';ni.innerText='📝';ni.title=dayNotes.length>1?dayNotes.length+' work notes':'View work note';ni.onclick=(ev)=>{ev.stopPropagation();openNotesForDate(k,`${d}/${m+1}/${y}`)};c.appendChild(ni);}
     if(gccHoliday)c.innerHTML+=`<span class="holiday-name">${gccHoliday.name.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span>`;
     if(gccHoliday)c.title=gccHoliday.name+(gccHoliday.estimated?' — estimated; verify official announcement':'');
     if(r.hours>0&&r.status!=='absent'&&r.status!=='none'&&r.status!=='sick')c.innerHTML+=`<span class="otb">+${r.hours}h</span>`;
@@ -723,6 +821,7 @@ function render(){
   document.getElementById('rDed').innerText=cfg.mode==='earned'?`Earned mode; sick deduction ${sickDed.toFixed(3)} ${cfg.currency}`:`- ${deductions.toFixed(3)} ${cfg.currency}`;
   document.getElementById('rNet').innerText=Number(finalNet).toFixed(3)+' '+cfg.currency;
   updateInrDisplay(Number(finalNet));
+  renderNotesSummary();
 }
 function tapDay(k,d,r){
   if(qMode!=='edit'){
@@ -745,7 +844,7 @@ function closeM(){document.getElementById('modal').style.display='none'}
 function saveDay(){
   let h=(tSt==='absent'||tSt==='none'||tSt==='sick')?0:(parseFloat(document.getElementById('hrInp').value)||0);
   db[selKey]={status:tSt,hours:h};localStorage.setItem('gulf_att_v5',JSON.stringify(db));
-  closeM();render();
+  closeM();render();renderNotesSummary();
 }
 render();
 loadFxRate();
