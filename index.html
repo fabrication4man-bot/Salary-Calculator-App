@@ -16,6 +16,8 @@
 <meta name="theme-color" content="#0b1f42">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-title" content="Gulf Salary Pro">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <style>
 *{box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:transparent}
@@ -240,6 +242,7 @@ body.month-detail-mode #dataSafetyPanel{display:none!important}
     <div class="home-ad-actions">
       <button type="button" class="primary" onclick="openSharePanel()">🔗 Share App</button>
       <button type="button" onclick="openSharePanel()">▣ Scan / QR Code</button>
+      <button type="button" id="installAppBtn" onclick="installGulfApp()" style="display:none">📲 Install App</button>
     </div>
   </div>
 
@@ -679,6 +682,28 @@ function getSickFractionForKey(key){
   });
   return sickTierFraction(prior+1);
 }
+
+// PWA install helper. A normal browser tab always shows the URL bar.
+// After installing and launching from the home screen, manifest display=standalone hides browser chrome.
+let gulfInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault(); gulfInstallPrompt=e;
+  const b=document.getElementById('installAppBtn'); if(b)b.style.display='block';
+});
+window.addEventListener('appinstalled',()=>{
+  gulfInstallPrompt=null;
+  const b=document.getElementById('installAppBtn'); if(b)b.style.display='none';
+});
+window.installGulfApp=async function(){
+  if(!gulfInstallPrompt){
+    alert('Chrome ⋮ → Add to Home screen / Install app चुनें। फिर Home screen से Gulf Salary Pro खोलें।');
+    return;
+  }
+  gulfInstallPrompt.prompt();
+  try{await gulfInstallPrompt.userChoice;}catch(e){}
+  gulfInstallPrompt=null;
+  const b=document.getElementById('installAppBtn'); if(b)b.style.display='none';
+};
 
 // App sharing: standalone UI only; salary and attendance calculations remain unchanged.
 const APP_BROWSER_URL = 'https://fabrication4man-bot.github.io/Salary-Calculator-App/';
